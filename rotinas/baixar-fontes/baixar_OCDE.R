@@ -55,7 +55,7 @@ campos_api <- c(
 )
 
 url_api <- paste(collapse = '/', campos_api)
-output_file <- "../../Fontes/OECD_enrl_by_field.csv"
+output_file <- "../../fontes/OECD_enrl_by_field.csv"
 
 status_download <- tryCatch({
 	download.file(

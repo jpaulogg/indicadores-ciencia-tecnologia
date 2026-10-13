@@ -23,7 +23,7 @@ status_download <- tryCatch({
 	unzip(
 		unesco_educ_zip,
 		files = c("OPRI_DATA_NATIONAL.csv", "OPRI_LABEL.csv"),
-		exdir = "../../Fontes"
+		exdir = "../../fontes"
 	)
 }, error = function(e) {
 	stop("Algo deu errado", e$message)

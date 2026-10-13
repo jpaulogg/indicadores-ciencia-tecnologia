@@ -14,11 +14,11 @@ assign(".UTILITARIOS", TRUE, envir = .GlobalEnv)
 # evitar problemas com downloads demorados
 options(timeout = 180)
 
-if (!dir.exists("../Fontes")) {
-	dir.create("../Fontes")
+if (!dir.exists("../fontes")) {
+	dir.create("../fontes")
 }
-if (!dir.exists("../Indicadores")) {
-	dir.create("../Indicadores")
+if (!dir.exists("../indicadores")) {
+	dir.create("../indicadores")
 }
 
 # -------------------------------------------

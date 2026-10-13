@@ -14,7 +14,7 @@ source("../utilitarios.R", chdir = TRUE)
 # 2.1 WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
-output_file <- "../../Fontes/WIPO_patentes_USPTO_2000_2008.csv"
+output_file <- "../../fontes/WIPO_patentes_USPTO_2000_2008.csv"
 
 wipo_url <- paste0(
 	"https://api.ipstatsdc.deda.prd.web1.wipo.int/api/v1/public/ips-search/downloadCsv?",
