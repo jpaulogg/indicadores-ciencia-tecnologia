@@ -1,23 +1,24 @@
-# Rotina para automatizar o download de dados utilizados na
-# construção de indicadores de Ciência, Tecnologia e Inovação
+# Opções e objetos de uso geral das rotinas
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
 # Preparar ambiente
 
+# evitar que "utilitarios.R" seja carregado mais de uma vez
 if (exists(".UTILITARIOS", envir = .GlobalEnv)) {
 	return(invisible())
 }
-
 assign(".UTILITARIOS", TRUE, envir = .GlobalEnv)
 
-options(timeout = 1800)
+# evitar problemas com downloads demorados
+options(timeout = 180)
 
-data_dir <- "fontes"
-
-if (!dir.exists(data_dir)) {
-	dir.create(data_dir)
+if (!dir.exists("../Fontes")) {
+	dir.create("../Fontes")
+}
+if (!dir.exists("../Indicadores")) {
+	dir.create("../Indicadores")
 }
 
 # -------------------------------------------
@@ -37,7 +38,7 @@ mapa_paises <- data.frame(
 		# grupo I - países consolidados que acompanham a fronteira
 		'AUS', 'AUT', 'BEL', 'CAN', 'CHE', 'DEU', 'DNK', 'FIN',
 		'GBR', 'IRL', 'ISL', 'LUX', 'NLD', 'NOR', 'NZL', 'SGP', 'SWE',
-		# Outliers II - países outliers que ainda não alcançaram o grupo I
+		# Outliers II - em grande ascensão, mas não alcançaram o grupo I
 		'CHN',
 		# grupo IIb - países em transição descendente ou ascendente
 		'BGR', 'CZE', 'ESP', 'EST', 'FRA', 'GRC', 'HRV', 'HUN',

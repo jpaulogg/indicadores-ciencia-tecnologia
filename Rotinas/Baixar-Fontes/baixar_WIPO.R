@@ -6,7 +6,7 @@
 # -------------------------------------------
 
 # Preparar o ambiente
-source("utilitarios.R")
+source("../utilitarios.R", chdir = TRUE)
 
 # -------------------------------------------
 # 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
@@ -14,7 +14,7 @@ source("utilitarios.R")
 # 2.1 WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
-output_file <- file.path(data_dir, "WIPO_patentes_USPTO_2000_2008.csv")
+output_file <- "../../Fontes/WIPO_patentes_USPTO_2000_2008.csv"
 
 wipo_url <- paste0(
 	"https://api.ipstatsdc.deda.prd.web1.wipo.int/api/v1/public/ips-search/downloadCsv?",
@@ -39,8 +39,6 @@ cabecalhos <- c(
 	"Sec-Fetch-Site"  = "same-site"
 )
 
-cat("Baixando dados da WIPO...\n")
-
 status_download <- tryCatch({
 	download.file(
 		url      = wipo_url,
@@ -53,5 +51,3 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha na conexão HTTP com o servidor da WIPO: ", e$message)
 })
-
-cat("Download finalizado com sucesso")

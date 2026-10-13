@@ -6,7 +6,7 @@
 # -------------------------------------------
 
 # Preparar o ambiente
-source("../utilitarios.R")
+source("../utilitarios.R", chdir = TRUE)
 
 # -------------------------------------------
 # 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
@@ -20,14 +20,11 @@ unesco_educ_zip <- file.path(tempdir(), "OPRI.zip")
 
 status_download <- tryCatch({
 	download.file(unesco_educ_url, destfile = unesco_educ_zip)
-	cat("Extraindo arquivos")
 	unzip(
 		unesco_educ_zip,
 		files = c("OPRI_DATA_NATIONAL.csv", "OPRI_LABEL.csv"),
-		exdir = data_dir
+		exdir = "../../Fontes"
 	)
 }, error = function(e) {
 	stop("Algo deu errado", e$message)
 })
-
-cat("Arquivos extraídos com sucesso")

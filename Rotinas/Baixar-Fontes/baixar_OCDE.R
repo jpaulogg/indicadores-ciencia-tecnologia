@@ -5,9 +5,6 @@
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
 
-# Preparar o ambiente
-source("../utilitarios.R")
-
 # -------------------------------------------
 # 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
 
@@ -58,7 +55,7 @@ campos_api <- c(
 )
 
 url_api <- paste(collapse = '/', campos_api)
-output_file <- file.path('..', '..', data_dir, "OECD_enrl_by_field.csv")
+output_file <- "../../Fontes/OECD_enrl_by_field.csv"
 
 status_download <- tryCatch({
 	download.file(
@@ -70,5 +67,3 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha no download: ", e$message)
 })
-
-cat("Download finalizado com sucesso")
