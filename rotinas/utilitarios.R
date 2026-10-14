@@ -33,17 +33,17 @@ periodo <- 2000:2025
 
 mapa_paises <- data.frame(
 	ISO3 = c(
-		# grupo Ib - países que lideram a fronteira
+		# grupo Ib - países que lideram a fronteira [1-4]
 		'USA', 'ISR', 'JPN', 'KOR',
-		# grupo I - países consolidados que acompanham a fronteira
+		# grupo I - países consolidados que acompanham a fronteira [5-21]
 		'AUS', 'AUT', 'BEL', 'CAN', 'CHE', 'DEU', 'DNK', 'FIN',
 		'GBR', 'IRL', 'ISL', 'LUX', 'NLD', 'NOR', 'NZL', 'SGP', 'SWE',
-		# Outliers II - em grande ascensão, mas não alcançaram o grupo I
+		# Outliers II - em grande ascensão, mas ainda fora do grupo I [22]
 		'CHN',
-		# grupo IIb - países em transição descendente ou ascendente
+		# grupo IIb - em transição descendente ou ascendente [23-37]
 		'BGR', 'CZE', 'ESP', 'EST', 'FRA', 'GRC', 'HRV', 'HUN',
 		'ITA', 'LTU', 'LVA', 'POL', 'PRT', 'SVK', 'SVN',
-		# grupo II - países intermediários com boa capacidade de absorção
+		# grupo II - intermediários com boa capacidade de absorção [37-48]
 		'ARG', 'BRA', 'CHL', 'COL', 'CRI', 'IND', 'MEX', 'PER', 'ROU',
 		'RUS', 'TUR', 'ZAF'
 	),
@@ -65,3 +65,13 @@ mapa_paises <- data.frame(
 		rep('II', 12)
 	)
 )
+
+paises_ib <- mapa_paises[mapa_paises$Grupo == "Ib", ]
+paises_ib$Grupo <- NULL
+paises_i <- mapa_paises[mapa_paises$Grupo == "I", ]
+paises_i$Grupo <- NULL
+
+paises_iib <- mapa_paises[mapa_paises$Grupo == "IIb", ]
+paises_iib$Grupo <- NULL
+paises_ii <- mapa_paises[mapa_paises$Grupo == "II", ]
+paises_ii$Grupo <- NULL
