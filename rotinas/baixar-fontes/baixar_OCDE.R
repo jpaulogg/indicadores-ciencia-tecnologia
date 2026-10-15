@@ -8,26 +8,14 @@
 
 # 1.1 OCDE - Number of enrolled students, graduates and new
 # .......... entrants by field of education
-#
-# Campos de estudo:
-# .... F00: Generic programmes and qualifications
-# .... F01: Education
-# .... F02: Arts and humanities
-# .... F03: Social sciences, journalism and information
-# .... F04: Business, administration and law
-# .... F05: Natural sciences, mathematics and statistics
-# .... F06: Information and Communication Technologies... (ICT ou TIC)
-# .... F07: Engineering, manufacturing and construction
-# .... F08: Agriculture, forestry, fisheries and veterinary
-# .... F09: Health and welfare broad field level
-# .... F10: Services
-# .... F99: Field unspecified (broad field level)
-# .... F05T07: Science, technology, engineering and mathematics (STEM)
+
+# carregar objetos e opções padrão
+source("../init.R", chdir = TRUE)
 
 url_api <- paste0(
 	# host URL
 	"https://sdmx.oecd.org/public/rest/data/",
-	# identificador da agencia a qual pertence a base de dados
+	# identificador da agencia à qual pertence a base de dados
 	"OECD.EDU.IMEP,",
 	# identificador da base de dados
 	"DSD_EAG_UOE_NON_FIN_STUD@DF_UOE_NF_STUD_DB,",
@@ -66,7 +54,7 @@ url_api <- paste0(
 	"&format=csvfile"
 )
 
-output_file <- "../../fontes/OCDE_estudantes_por_campo.csv"
+output_file <- file.path(dirs$input, "OCDE_estudantes_por_campo.csv")
 
 status_download <- tryCatch({
 	download.file(

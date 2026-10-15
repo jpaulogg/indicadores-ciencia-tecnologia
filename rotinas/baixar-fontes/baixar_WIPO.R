@@ -4,17 +4,13 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-
-# Preparar o ambiente
-source("../utilitarios.R", chdir = TRUE)
-
-# -------------------------------------------
 # 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
 
 # 2.1 WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
-output_file <- "../../fontes/WIPO_patentes_USPTO_2000_2008.csv"
+# carregar objetos e opções padrão
+source("../init.R", chdir = TRUE)
 
 wipo_url <- paste0(
 	"https://api.ipstatsdc.deda.prd.web1.wipo.int/api/v1/public/ips-search/downloadCsv?",
@@ -38,6 +34,8 @@ cabecalhos <- c(
 	"Sec-Fetch-Mode"  = "cors",
 	"Sec-Fetch-Site"  = "same-site"
 )
+
+output_file <- file.path(dirs$input, "WIPO_patentes_USPTO_2000_2008.csv")
 
 status_download <- tryCatch({
 	download.file(
