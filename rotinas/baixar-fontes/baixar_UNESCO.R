@@ -10,18 +10,15 @@
 # ............. Engineering and Mathematics programmes in tertiary
 # ............. education
 
-# carregar objetos e opções padrão
-source("../setup.R", chdir = TRUE)
-
-unesco_educ_url <- "https://download.uis.unesco.org/bdds/202602/OPRI.zip"
-unesco_educ_zip <- file.path(tempdir(), "OPRI.zip"))
+zip_url <- "https://download.uis.unesco.org/bdds/202602/OPRI.zip"
+zip_file <- file.path(tempdir(), "OPRI.zip")
 
 status_download <- tryCatch({
-	download.file(unesco_educ_url, destfile = unesco_educ_zip)
+	download.file(zip_url, destfile = zip_file, mode = 'wb')
 	unzip(
-		unesco_educ_zip,
+		zip_file,
 		files = c("OPRI_DATA_NATIONAL.csv", "OPRI_LABEL.csv"),
-		exdir = input_dir
+		exdir = input_dir  # definido em setup.R
 	)
 }, error = function(e) {
 	stop("Algo deu errado", e$message)

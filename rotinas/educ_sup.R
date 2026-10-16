@@ -10,9 +10,6 @@
 # OCDE - Number of enrolled students, graduates and new entrants by
 # ...... field of education
 
-# carregar objetos de uso geral
-source("setup.R")
-
 arquivo_ocde <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
 
 if (!file.exists(arquivo_ocde)) {
@@ -42,6 +39,9 @@ colunas_ocde <- c(
 dados_ocde <- read.csv(arquivo_ocde, colClasses = colunas_ocde)
 dados_ocde <- dados_ocde[, names(colunas_ocde)]
 
+# OBS_STATUS == "M" significa valores que não podem existir
+dados_ocde$OBS_VALUE[dados_ocde$OBS_STATUS == "M"] <- 0
+
 # UNESCO - Percentage of graduates from STEM programmes in tertiary
 # ........ education
 
@@ -70,147 +70,158 @@ id_unesco <- c(
 	"ETOIP.5T8.PU",           # % of enrolment in public institutions
 	"25053",                  # Enrolment in all programmes
 	"25057",                  # Enrolment in all programmes, female 
-	"42620",                  # Enrolment in all programmes, male 
-	"42654",                  # Enrolment in ISCED 6 programmes
-	"42635",                  # Enrolment in ISCED 6 programmes, female
-	"42615",                  # Enrolment in ISCED 6 programmes, male
-	"42656",                  # Enrolment in ISCED 7 programmes
-	"42637",                  # Enrolment in ISCED 7 programmes, female
-	"42617",                  # Enrolment in ISCED 7 programmes, male
-	"25052",                  # Enrolment in ISCED 8 programmes
-	"25056",                  # Enrolment in ISCED 8 programmes, female
-	"42619"                   # Enrolment in ISCED 8 programmes, male
+	"42620"                   # Enrolment in all programmes, male 
 )
 
 dados_unesco <- read.csv(arquivo_unesco)
 dados_unesco$MAGNITUDE <- NULL
 dados_unesco <- dados_unesco[
 	dados_unesco$INDICATOR_ID %in% id_unesco &
-	dados_unesco$COUNTRY_ID %in% mapa_paises$ISO3 &   # ver global.R
-	dados_unesco$YEAR %in% 2000:2024,
+	dados_unesco$COUNTRY_ID %in% mapa_paises$ISO3 &
+	dados_unesco$YEAR %in% periodo,
 ]
 
 # -------------------------------------------
-# CT_CONC_TOT - Concluintes em todas as áreas
+# FUNÇÕES
 
-# filtros iniciais
-grad_total_ocde <- dados_ocde[
-	dados_ocde$MEASURE == "GRAD" &
-	dados_ocde$EDUCATION_FIELD == "_T",
-]
-grad_total_ocde$MEASURE <- NULL
-grad_total_ocde$EDUCATION_FIELD <- droplevels(
-	grad_total_ocde$EDUCATION_FIELD
-)
+# Função para agregar a base da OCDE. Ao usá-la, é necessário filtrar
+# colunas que possuem categorias de "Totais" e que não serão agrupadas.
+agregar <- function(dados, .ref_var = NULL, .estrito = TRUE) {
+	agrupadores <- c("REF_AREA", "TIME_PERIOD", .ref_var)
+	form <- reformulate(termlabels = agrupadores, response = "OBS_VALUE")
+	
+	# se .estrito = TRUE, qualquer NA invalida a soma
+	# se .estrito = FALSE, soma o que estiver disponível
+	soma_estrita <- function(x) {
+		if (all(is.na(x))) return(NA_real_)
+		sum(x, na.rm = !.estrito)
+	}
+	aggregate(
+		form,
+		data = dados,
+		FUN = soma_estrita,
+		na.action = na.pass
+	)
+}
 
-# agregar tudo menos tipo de instituição
-conctot_inst <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD + INST_TYPE_EDU,
-	data = grad_total_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
-conctot_inst$INST_TYPE_EDU <- droplevels(conctot_inst$INST_TYPE_EDU)
+# Função para gerar blocos de agregações de campo de estudo, sexo,
+# tipo de instituição e total de concluintes/titulados.
+agregar.bloco <- function(dados, .nivel = NULL, .stem = FALSE) {
 
-# adicionar filtro institucional aos filtros iniciais
-grad_total_ocde <- grad_total_ocde[
-	grad_total_ocde$INST_TYPE_EDU == "INST_EDU", 
-]
+	# filtros iniciais
+	df <- dados[dados$MEASURE == "GRAD", ]
+	if (!is.null(.nivel)) {
+		df <- df[df$EDUCATION_LEV == .nivel, ]
+	}
 
-# agregar tudo menos sexo
-conctot_sexo <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD + SEX,
-	data = grad_total_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
-conctot_sexo$SEX <- droplevels(conctot_sexo$SEX)
+	# áreas STEM (não é possível desagregar por tipo de instituição)
+	# ver table(dados_ocde$EDUCATION_FIELD, dados_ocde$INST_TYPE_EDU)
+	if (.stem) {
+		df_stem <- df[
+			df$EDUCATION_FIELD %in% c("F05", "F06", "F07") &
+			df$INST_TYPE_EDU == "INST_EDU",
+		]
+		df_stem$EDUCATION_FIELD <- droplevels(df_stem$EDUCATION_FIELD)
 
-# agregar tudo
-conctot_total <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD,
-	data = grad_total_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
+		return(list(
+			campo = agregar(df_stem, "EDUCATION_FIELD"),
+			sexo  = agregar(df_stem, "SEX"),
+			total = agregar(df_stem)
+		))
+	}
 
-# CT_CONCSTEM - Concluintes em áreas STEM
+	# todas as áreas
+	df_tot <- df[
+		df$EDUCATION_FIELD != "_T" &
+		df$INST_TYPE_EDU == "INST_EDU",
+	]
+	df_tot$EDUCATION_FIELD <- droplevels(df_tot$EDUCATION_FIELD)
 
-# filtros iniciais
-grad_stem_ocde <- dados_ocde[
-	dados_ocde$MEASURE == "GRAD" &
-	dados_ocde$INST_TYPE_EDU == "INST_EDU" &
-	dados_ocde$EDUCATION_FIELD %in% c("F05", "F06", "F07"),
-]
-grad_stem_ocde$MEASURE <- NULL
-grad_stem_ocde$INST_TYPE_EDU <- NULL
-grad_stem_ocde$EDUCATION_FIELD <- droplevels(
-	grad_stem_ocde$EDUCATION_FIELD
-)
+	df_inst <- df[
+		df$EDUCATION_FIELD == "_T" &
+		df$INST_TYPE_EDU != "INST_EDU",
+	]
+	df_inst$INST_TYPE_EDU <- droplevels(df_inst$INST_TYPE_EDU)
 
-# agregar tudo menos sexo
-concstem_sexo <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD + SEX,
-	data = grad_stem_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
-
-# agregar tudo menos campo de estudo
-concstem_campo <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD + EDUCATION_FIELD,
-	data = grad_stem_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
-
-# agregar tudo
-concstem_campo <- aggregate(
-	OBS_VALUE ~ REF_AREA + TIME_PERIOD,
-	data = grad_stem_ocde,
-	FUN = sum,
-	na.action = na.pass,
-	na.rm = TRUE
-)
-
-# CT_CONCSTEM_PERCENT
-
-id_stem_sexo <- c("FOSGP.5T8.F500600700.F", "FOSGP.5T8.F500600700.M")
-
-concstem_prcnt_sexo <- dados_unesco[
-	dados_unesco$INDICATOR_ID %in% id_stem_sexo,
-]
-
+	list(
+		campo = agregar(df_tot, "EDUCATION_FIELD"),
+		sexo  = agregar(df_tot, "SEX"),
+		total = agregar(df_tot),
+		inst  = agregar(df_inst, "INST_TYPE_EDU")
+	)
+}
 
 # -------------------------------------------
-# MATRICULADOS
+# 1. CONCLUINTES/TITULADOS
 
-matot <- dados_unesco[matot$INDICATOR_ID == "]
+# concluintes em programas de bacharelado, mestrado ou doutorado
+ct_conctot <- agregar.bloco(dados_ocde)
+ct_concstem <- agregar.bloco(dados_ocde, .stem = TRUE)
 
-matot_campo <- dados_ocde[
+# concluintes em programas de bacharelado
+ct_bachareis <- agregar.bloco(dados_ocde, "ISCED11_6")
+ct_bachareistem <- agregar.bloco(
+	dados_ocde,
+	"ISCED11_6",
+	.stem = TRUE
+)
+
+# titulados em programas de mestrado
+ct_mestres <- agregar.bloco(dados_ocde, "ISCED11_7")
+ct_mestrestem <- agregar.bloco(
+	dados_ocde,
+	"ISCED11_7",
+	.stem = TRUE
+)
+
+# titulados em programas de doutorado
+ct_doutores <- agregar.bloco(dados_ocde, "ISCED11_8")
+ct_doutorestem <- agregar.bloco(
+	dados_ocde,
+	"ISCED11_8",
+	.stem = TRUE
+)
+
+# -------------------------------------------
+# 2. MATRICULADOS
+
+# 2.1 Matriculados em todas as áreas (CT_MATOT)
+
+# dados da UNESCO abrangem período mais longo e maior número de países
+matot_total <- dados_unesco[dados_unesco$INDICATOR_ID == "25053", ]
+
+id_mat_sexo <- c("25057", "42620")
+matot_sexo <- dados_unesco[dados_unesco$INDICATOR_ID %in% id_mat_sexo, ]
+
+id_mat_inst <- c("ETOIP.5T8.PR", "ETOIP.5T8.PU")
+matot_inst <- dados_unesco[dados_unesco$INDICATOR_ID %in% id_mat_inst, ]
+
+# dados da OCDE permitem desagregar por campo de estudo e instituições
+matot_campo <- agregar(
+	dados = dados_ocde[
+		dados_ocde$MEASURE == "ENRL" &
+		dados_ocde$EDUCATION_FIELD != "_T" &
+		dados_ocde$INST_TYPE_EDU == "INST_EDU",
+	],
+	.ref_var = "EDUCATION_FIELD"
+)
+matot_ocde$EDUCATION_FIELD <- droplevels(matot_ocde$EDUCATION_FIELD)
+
+rm(matot_ocde)
+
+# 2.2 Matriculados em cursos STEM (CT_MATSTEM)
+
+matstem_ocde <- dados_ocde[
 	dados_ocde$MEASURE == "ENRL" &
-	dados_ocde$MOBILITY == "_T" &
-	dados_ocde$SEX == "_T",
+	dados_ocde$EDUCATION_FIELD %in% c("F05", "F06", "F07") &
+	dados_ocde$INST_TYPE_EDU == "INST_EDU",
 ]
-matot_campo$MEASURE <- NULL
-matot_campo$MOBILITY <- NULL
-matot_campo$SEX <- NULL
+matstem_ocde$MEASURE <- NULL
+matstem_ocde$INST_TYPE_EDU <- NULL
+matstem_ocde$EDUCATION_FIELD <- droplevels(matstem_ocde$EDUCATION_FIELD)
 
-# -------------------------------------------
-# BACHAREIS (GRADUADOS)
-bachareis <- dados_ocde[
-	dados_ocde$MEASURE == "GRAD" &
-	dados_ocde$EDUCATION_LEV == "ISCED11_6",
-]
-bachareis$MEASURE <- NULL
-bachareis$EDUCATION_LEV <- NULL
+matstem_campo <- agregar(matstem_ocde, "EDUCATION_FIELD" )
+matstem_sexo  <- agregar(matstem_ocde, "SEX")
+matstem_total <- agregar(matstem_ocde)
 
-bachareis_campo <- bachareis[
-	bachareis$MOBILITY == "_T" &
-	bachareis$SEX == "_T",
-]
+rm(matstem_ocde)

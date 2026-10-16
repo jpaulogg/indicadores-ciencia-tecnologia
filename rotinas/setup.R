@@ -5,12 +5,6 @@
 # -------------------------------------------
 # Preparar ambiente
 
-# evitar que "init.R" seja carregado mais de uma vez
-if (exists(".SETUP", envir = .GlobalEnv)) {
-	return(invisible())
-}
-assign(".SETUP", TRUE, envir = .GlobalEnv)
-
 # diretórios de uso geral
 input_dir  <- file.path(dirname(getwd()), "fontes")
 output_dir <- file.path(dirname(getwd()), "indicadores")
@@ -41,7 +35,7 @@ mapa_paises <- data.frame(
 		# grupo I - países consolidados que acompanham a fronteira [5-21]
 		'AUS', 'AUT', 'BEL', 'CAN', 'CHE', 'DEU', 'DNK', 'FIN',
 		'GBR', 'IRL', 'ISL', 'LUX', 'NLD', 'NOR', 'NZL', 'SGP', 'SWE',
-		# Outliers II - em grande ascensão, mas ainda fora do grupo I [22]
+		# outliers II - em grande ascensão, mas ainda fora do grupo I [22]
 		'CHN',
 		# grupo IIb - em transição descendente ou ascendente [23-37]
 		'BGR', 'CZE', 'ESP', 'EST', 'FRA', 'GRC', 'HRV', 'HUN',
@@ -53,17 +47,17 @@ mapa_paises <- data.frame(
 	ISO2 = c(
 		'US', 'IL', 'JP', 'KR',
 		'AU', 'AT', 'BE', 'CA', 'CH', 'DE', 'DK', 'FI',
-		'GB', 'IE', 'IS', 'LU', 'NL', 'NO', 'NZ', 'SE', 'SG',
+		'GB', 'IE', 'IS', 'LU', 'NL', 'NO', 'NZ', 'SG', 'SE',
 		'CN',
 		'BG', 'CZ', 'ES', 'EE', 'FR', 'GR', 'HR', 'HU',
 		'IT', 'LT', 'LV', 'PL', 'PT', 'SK', 'SI',
-		'AR', 'BR', 'CL', 'CO', 'CR', 'IN', 'MX', 'PE', 'RO', 'RU', 'TR',
-		'ZA'
+		'AR', 'BR', 'CL', 'CO', 'CR', 'IN', 'MX', 'PE', 'RO',
+		'RU', 'TR', 'ZA'
 	),
 	Grupo = c(
 		rep('Ib', 4),
 		rep('I', 17),
-		'Outlier_II',
+		'O',
 		rep('IIb', 15),
 		rep('II', 12)
 	)

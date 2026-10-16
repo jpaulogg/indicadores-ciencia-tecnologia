@@ -9,9 +9,6 @@
 # 2.1 WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
-# carregar objetos e opções padrão
-source("../setup.R", chdir = TRUE)
-
 wipo_url <- paste0(
 	"https://api.ipstatsdc.deda.prd.web1.wipo.int/api/v1/public/ips-search/downloadCsv?",
 	"selectedTab=patent&indicator=10&reportType=15&",
@@ -35,7 +32,10 @@ cabecalhos <- c(
 	"Sec-Fetch-Site"  = "same-site"
 )
 
-output_file <- file.path(input_dir, "WIPO_patentes_USPTO_2000_2008.csv")
+output_file <- file.path(
+	input_dir,  # definido em setup.R
+	"WIPO_patentes_USPTO_2000_2008.csv"
+)
 
 status_download <- tryCatch({
 	download.file(
