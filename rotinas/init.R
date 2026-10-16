@@ -13,8 +13,8 @@ assign(".INIT", TRUE, envir = .GlobalEnv)
 
 # diretórios de uso geral
 dirs <- list(
-	input  = file.path(dirname(getwd()), "fontes")
-	output = file.path(dirname(getwd()), "indicadores")
+	input  = file.path(dirname(getwd()), "fontes"),
+	output = file.path(dirname(getwd()), "indicadores"),
 	visual = file.path(dirname(getwd()), "elaborações")
 )
 invisible(lapply(dirs, dir.create, showWarnings = FALSE))
@@ -25,6 +25,7 @@ options(timeout = 180)
 # -------------------------------------------
 # Objetos de uso geral
 
+# algumas bases começam em 2013, muitas vão apenas até 2024.
 periodo <- 2000:2025
 
 # Agrupamento de países segundo a classificação proposta pelo trabalho
