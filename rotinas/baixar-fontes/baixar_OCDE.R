@@ -54,7 +54,7 @@ url_api <- paste0(
 	"&format=csvfile"
 )
 
-output_file <- file.path(dirs$input, "OCDE_estudantes_por_campo.csv")
+output_file <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
 
 status_download <- tryCatch({
 	download.file(

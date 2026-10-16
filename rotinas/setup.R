@@ -12,12 +12,13 @@ if (exists(".SETUP", envir = .GlobalEnv)) {
 assign(".SETUP", TRUE, envir = .GlobalEnv)
 
 # diretórios de uso geral
-dirs <- list(
-	input  = file.path(dirname(getwd()), "fontes"),
-	output = file.path(dirname(getwd()), "indicadores"),
-	visual = file.path(dirname(getwd()), "elaborações")
-)
-invisible(lapply(dirs, dir.create, showWarnings = FALSE))
+input_dir  <- file.path(dirname(getwd()), "fontes")
+output_dir <- file.path(dirname(getwd()), "indicadores")
+visual_dir <- file.path(dirname(getwd()), "elaboracoes")
+
+for (d in c(input_dir, output_dir, visual_dir)) {
+	dir.create(d, showWarnings = FALSE)
+}
 
 # evitar problemas com downloads demorados
 options(timeout = 180)

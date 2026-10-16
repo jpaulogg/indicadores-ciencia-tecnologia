@@ -13,9 +13,9 @@
 # carregar objetos de uso geral
 source("setup.R")
 
-arquivocde <- file.path(dirs$input, "OCDE_estudantes_por_campo.csv")
+arquivo_ocde <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
 
-if (!file.exists(arquivocde)) {
+if (!file.exists(arquivo_ocde)) {
 	resposta <- readline(paste0(
 		"O arquivo 'OCDE_estudantes_por_campo.csv' não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
@@ -39,15 +39,15 @@ colunas_ocde <- c(
 	"OBS_VALUE"       = "numeric"
 )
 
-dados_ocde <- read.csv(arquivocde, colClasses = colunas_ocde)
+dados_ocde <- read.csv(arquivo_ocde, colClasses = colunas_ocde)
 dados_ocde <- dados_ocde[, names(colunas_ocde)]
 
 # UNESCO - Percentage of graduates from STEM programmes in tertiary
 # ........ education
 
-arquivunesco <- "../fontes/OPRI_DATA_NATIONAL.csv"
+arquivo_unesco <- file.path(input_dir, "OPRI_DATA_NATIONAL.csv")
 
-if (!file.exists(arquivunesco)) {
+if (!file.exists(arquivo_unesco)) {
 	resposta <- readline(paste0(
 		"O arquivo 'OPRI_DATA_NATIONAL.csv' não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
@@ -82,7 +82,7 @@ id_unesco <- c(
 	"42619"                   # Enrolment in ISCED 8 programmes, male
 )
 
-dados_unesco <- read.csv(arquivunesco)
+dados_unesco <- read.csv(arquivo_unesco)
 dados_unesco$MAGNITUDE <- NULL
 dados_unesco <- dados_unesco[
 	dados_unesco$INDICATOR_ID %in% id_unesco &

@@ -35,7 +35,7 @@ cabecalhos <- c(
 	"Sec-Fetch-Site"  = "same-site"
 )
 
-output_file <- file.path(dirs$input, "WIPO_patentes_USPTO_2000_2008.csv")
+output_file <- file.path(input_dir, "WIPO_patentes_USPTO_2000_2008.csv")
 
 status_download <- tryCatch({
 	download.file(
