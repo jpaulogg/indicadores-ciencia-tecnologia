@@ -10,7 +10,7 @@
 # Indicador: Total patent applications (direct and PCT)
 
 # carregar objetos e opções padrão
-source("../init.R", chdir = TRUE)
+source("../setup.R", chdir = TRUE)
 
 wipo_url <- paste0(
 	"https://api.ipstatsdc.deda.prd.web1.wipo.int/api/v1/public/ips-search/downloadCsv?",

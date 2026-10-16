@@ -10,7 +10,7 @@
 # .......... entrants by field of education
 
 # carregar objetos e opções padrão
-source("../init.R", chdir = TRUE)
+source("../setup.R", chdir = TRUE)
 
 url_api <- paste0(
 	# host URL

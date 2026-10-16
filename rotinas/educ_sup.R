@@ -11,7 +11,7 @@
 # ...... field of education
 
 # carregar objetos de uso geral
-source("init.R")
+source("setup.R")
 
 arquivocde <- file.path(dirs$input, "OCDE_estudantes_por_campo.csv")
 

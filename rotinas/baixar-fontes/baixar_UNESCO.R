@@ -11,7 +11,7 @@
 # ............. education
 
 # carregar objetos e opções padrão
-source("../init.R", chdir = TRUE)
+source("../setup.R", chdir = TRUE)
 
 unesco_educ_url <- "https://download.uis.unesco.org/bdds/202602/OPRI.zip"
 unesco_educ_zip <- file.path(tempdir(), "OPRI.zip"))
