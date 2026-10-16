@@ -28,13 +28,13 @@ url_api <- paste0(
 	"+BGR+CZE+ESP+EST+FRA+GRC+HRV+HUN+ITA+LTU+LVA+POL+PRT+SVK+SVN",
 	"+BRA+CHL+COL+CRI+MEX+PER+ROU+TUR.",
 	# nivel (ciclo curto + bacharelado + mestrado + doutorado + total)
-	"ISCED11_5+ISCED11_6+ISCED11_7+ISCED11_8+ISCED11_5T8.",
+	"ISCED11_5+ISCED11_6+ISCED11_7+ISCED11_8.",
 	# medida (matriculados + concluintes)
 	"ENRL+GRAD.",
 	# tipo de educacao (educacao formal + total) e intensidade (total)
 	"FE+_T._T.",
 	# campos (total + areas STEM + areas individuais + nao especificadas)
-	"_T+F05T07+F00+F01+F02+F03+F04+F05+F06+F07+F08+F09+F10+F99.",
+	"_T+F00+F01+F02+F03+F04+F05+F06+F07+F08+F09+F10+F99.",
 	# ano curricular, frequencia (A = anual), pais de origem e destino
 	".A...",
 	# tipo de instituicao (publica, privada e total)
@@ -44,7 +44,7 @@ url_api <- paste0(
 	# unidade de medida (PS = contagem de pessoas)
 	"PS.",
 	# genero (feminino, masculino e total) e faixa etaria (total)
-	"F+M+_T._T?",
+	"F+M._T?",
 	# recorte temporal (anos disponiveis: 2005, 2010-2024)
 	"startPeriod=2010",
 	"&endPeriod=2024",
