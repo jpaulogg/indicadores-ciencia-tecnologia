@@ -4,6 +4,9 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
+# Os seguintes objetos estão definidos em "setup.R":
+# ... input_dir (diretório de fonte de dados)
+
 # 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
 
 # 1.1 OCDE - Number of enrolled students, graduates and new

@@ -4,6 +4,9 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
+# Os seguintes objetos estão definidos em "setup.R":
+# ... input_dir (diretório de fonte de dados)
+
 # 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
 
 # 2.1 WIPO - IP Statiscs Data Center
