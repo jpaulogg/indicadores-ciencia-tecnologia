@@ -2,4 +2,5 @@
 *.xlsx
 *.xls
 *.pdf
-rotinas/baixar-fontes/*/
+/gerar-fontes/.*/
+/gerar-fontes/*/
