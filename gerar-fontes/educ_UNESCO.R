@@ -4,9 +4,6 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-# Os seguintes objetos estão definidos em "setup.R":
-# ... input_dir (diretório de fonte de dados)
-
 # 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
 
 # 1.2  UNESCO - Percentage of graduates from Science, Technology,
@@ -21,8 +18,7 @@ status_download <- tryCatch({
 	unzip(
 		zip_file,
 		files = c("OPRI_DATA_NATIONAL.csv", "OPRI_LABEL.csv"),
-		exdir = input_dir  # definido em setup.R
-	)
+		exdir = input_dir)
 }, error = function(e) {
 	stop("Algo deu errado", e$message)
 })

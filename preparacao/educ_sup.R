@@ -6,9 +6,10 @@
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
 # Os seguintes objetos estão definidos em "setup.R":
+# ... dl_dir (diretório de rotinas para baixar fontes)
 # ... input_dir (diretório de fonte de dados)
-# ... mapa_paises (siglas ISO3 e ISO2 de grupos de países selecionados)
 # ... periodo (por padrão, 2000:2025)
+# ... mapa_paises (siglas ISO3 e ISO2 de grupos de países selecionados)
 
 # LEITURA DOS DADOS
 
@@ -16,6 +17,7 @@
 # .......... and new entrants by field of education
 
 arquivo_ocde <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
+dl_script <- file.path(dl_dir, "educ_OCDE.R")
 
 if (!file.exists(arquivo_ocde)) {
 	resposta <- readline(paste0(
@@ -23,7 +25,7 @@ if (!file.exists(arquivo_ocde)) {
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
-		source("../baixar-fontes/baixar_OCDE.R", chdir = TRUE)
+		source(dl_file, chdir = TRUE)
 	} else {
 		stop("Download cancelado")
 	}

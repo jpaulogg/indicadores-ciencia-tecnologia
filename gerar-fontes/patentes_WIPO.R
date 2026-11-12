@@ -4,12 +4,9 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-# Os seguintes objetos estão definidos em "setup.R":
-# ... input_dir (diretório de fonte de dados)
+# 3. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
 
-# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
-
-# 2.1 WIPO - IP Statiscs Data Center
+# 3.2 WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
 wipo_url <- paste0(
@@ -35,10 +32,7 @@ cabecalhos <- c(
 	"Sec-Fetch-Site"  = "same-site"
 )
 
-output_file <- file.path(
-	input_dir,  # definido em setup.R
-	"WIPO_patentes_USPTO_2000_2008.csv"
-)
+output_file <- file.path(input_dir, "WIPO_patentes_USPTO_2000_2008.csv")
 
 status_download <- tryCatch({
 	download.file(

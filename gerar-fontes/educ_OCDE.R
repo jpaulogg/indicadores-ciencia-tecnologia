@@ -4,13 +4,9 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-# Os seguintes objetos estão definidos em "setup.R":
-# ... input_dir (diretório de fonte de dados)
-
 # 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
 
-# 1.1 OCDE - Number of enrolled students, graduates and new
-# .......... entrants by field of education
+# 1.1 OCDE - Student (full database)
 
 url_api <- paste0(
 	# host URL
@@ -21,7 +17,7 @@ url_api <- paste0(
 	"DSD_EAG_UOE_NON_FIN_STUD@DF_UOE_NF_STUD_DB,",
 	# versao da base de dados
 	"1.1/",
-	# paises (lideres + desenvolvidos + em transição + intermediários)
+	# paises (disponível: 38 da OCDE + 5)
 	"ISR+JPN+KOR+USA",
 	"+AUS+AUT+BEL+CAN+CHE+DEU+DNK+FIN+GBR+IRL+ISL+LUX+NLD+NOR+NZL+SWE",
 	"+BGR+CZE+ESP+EST+FRA+GRC+HRV+HUN+ITA+LTU+LVA+POL+PRT+SVK+SVN",
@@ -35,7 +31,7 @@ url_api <- paste0(
 	# campos (total + areas STEM + areas individuais + nao especificadas)
 	"_T+F00+F01+F02+F03+F04+F05+F06+F07+F08+F09+F10+F99.",
 	# ano curricular, frequência (A = anual), país de origem e destino
-	".A...",
+	"_T.A._Z._Z.",
 	# tipo de instituição (publica, privada e total)
 	"INST_EDU_PUB+INST_EDU_PRIV+INST_EDU.",
 	# mobilidade (total)
@@ -53,10 +49,7 @@ url_api <- paste0(
 	"&format=csvfile"
 )
 
-output_file <- file.path(
-	input_dir,  # definido em setup.R
-	"OCDE_estudantes_por_campo.csv"
-)
+output_file <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
 
 status_download <- tryCatch({
 	download.file(

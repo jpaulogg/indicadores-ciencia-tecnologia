@@ -1,24 +1,12 @@
-# Opções e objetos de uso geral das rotinas
+# Objetos de uso geral das rotinas
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-# Preparar ambiente
 
 # diretórios de uso geral
-input_dir  <- file.path(dirname(getwd()), "fontes")
-output_dir <- file.path(dirname(getwd()), "indicadores")
-visual_dir <- file.path(dirname(getwd()), "elaboracoes")
-
-for (d in c(input_dir, output_dir, visual_dir)) {
-	dir.create(d, showWarnings = FALSE)
-}
-
-# evitar problemas com downloads demorados
-options(timeout = 180)
-
-# -------------------------------------------
-# Objetos de uso geral
+dl_dir    <- file.path(dirname(getwd()) , "gerar-fontes")
+input_dir <- file.path(dirname(getwd()) , "fontes")
 
 # algumas bases começam em 2013, muitas vão apenas até 2024.
 periodo <- 2000:2025
