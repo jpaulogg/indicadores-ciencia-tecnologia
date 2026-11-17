@@ -25,7 +25,7 @@ if (!file.exists(arquivo_ocde)) {
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
-		source(dl_file, chdir = TRUE)
+		source(dl_script, chdir = TRUE)
 	} else {
 		stop("Download cancelado")
 	}
@@ -50,42 +50,7 @@ dados_ocde <- dados_ocde[, names(colunas_ocde)]
 dados_ocde$OBS_VALUE[dados_ocde$OBS_STATUS == "M"] <- 0
 
 # 2. UNESCO - Other Policy Relevant Indicators (Education – OPRI)
-
-arquivo_unesco <- file.path(input_dir, "OPRI_DATA_NATIONAL.csv")
-
-if (!file.exists(arquivo_unesco)) {
-	resposta <- readline(paste0(
-		"O arquivo 'OPRI_DATA_NATIONAL.csv' não foi encontrado.",
-		" Deseja baixá-lo agora? (s/n): "
-	))
-	if (grepl(pattern = "[SsYy]", resposta)) {
-		source("../baixar-fontes/baixar_UNESCO.R", chdir = TRUE)
-	} else {
-		stop("Download cancelado")
-	}
-}
-
-id_unesco <- c(
-	"FOSGP.5T8.F500600700",   # % of graduates from STEM
-	"FOSGP.5T8.F500600700.F", # % of graduates from STEM, female
-	"FOSGP.5T8.F500600700.M", # % of graduates from STEM, male
-	"FOSGP.5T8.F500",         # % of graduates from science and math
-	"FOSGP.5T8.F600",         # % of graduates from TIC
-	"FOSGP.5T8.F700",         # % of graduates from engineere
-	"ETOIP.5T8.PR",           # % of enrolment in private institutions
-	"ETOIP.5T8.PU",           # % of enrolment in public institutions
-	"25053",                  # Enrolment in all programmes
-	"25057",                  # Enrolment in all programmes, female 
-	"42620"                   # Enrolment in all programmes, male 
-)
-
-dados_unesco <- read.csv(arquivo_unesco)
-dados_unesco$MAGNITUDE <- NULL
-dados_unesco <- dados_unesco[
-	dados_unesco$INDICATOR_ID %in% id_unesco &
-	dados_unesco$COUNTRY_ID %in% mapa_paises$ISO3 &
-	dados_unesco$YEAR %in% periodo,
-]
+dados_unesco <- read.csv(file.path(input_dir, "educ_UNESCO.csv"))
 
 # -------------------------------------------
 # FUNÇÕES

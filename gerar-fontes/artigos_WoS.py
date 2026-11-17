@@ -41,7 +41,7 @@ def desativar_quickedit_windows():
 
 def garantir_ambiente_e_pacotes():
 	try:
-		import websocket  # noqa: F401
+		import websocket	# noqa: F401
 		return
 	except ImportError:
 		pass
@@ -71,29 +71,29 @@ def garantir_ambiente_e_pacotes():
 
 desativar_quickedit_windows()
 garantir_ambiente_e_pacotes()
-import websocket  # noqa: E402
+import websocket	# noqa: E402
 
 
 # ==============================================================================
 # 2. PARÂMETROS DA PESQUISA (26 ANOS x 10 MACRO-TÓPICOS x 52 PAÍSES/TERRITÓRIOS)
 # ==============================================================================
 
-ANOS = list(range(2000, 2026))  # 2000 a 2025 (26 anos)
+ANOS = list(range(2000, 2026))	# 2000 a 2025 (26 anos)
 APENAS_ARTIGOS = False
 MAX_PASSADAS = 3
 
 # Os 10 Macro-Tópicos (TMAC = Macro Level Citation Topic)
 MACRO_TOPICOS_10 = {
-	1: ("Clinical & Life Sciences", '"1 Clinical & Life Sciences" OR "Clinical & Life Sciences"'),
-	2: ("Chemistry", '"2 Chemistry" OR "Chemistry"'),
-	3: ("Agriculture, Environment & Ecology", '"3 Agriculture, Environment & Ecology" OR "Agriculture, Environment & Ecology"'),
-	4: ("Electrical Engineering, Electronics & Computer Science", '"4 Electrical Engineering, Electronics & Computer Science" OR "Electrical Engineering, Electronics & Computer Science"'),
-	5: ("Physics", '"5 Physics" OR "Physics"'),
-	6: ("Social Sciences", '"6 Social Sciences" OR "Social Sciences"'),
-	7: ("Engineering & Materials Science", '"7 Engineering & Materials Science" OR "Engineering & Materials Science"'),
-	8: ("Earth Sciences", '"8 Earth Sciences" OR "Earth Sciences"'),
-	9: ("Mathematics", '"9 Mathematics" OR "Mathematics"'),
-	10: ("Arts & Humanities", '"10 Arts & Humanities" OR "Arts & Humanities"'),
+	1: "Clinical & Life Sciences",
+	2: "Chemistry",
+	3: "Agriculture,
+	4: "Electrical Engineering,
+	5: "Physics",
+	6: "Social Sciences",
+	7: "Engineering & Materials Science",
+	8: "Earth Sciences",
+	9: "Mathematics",
+	10: "Arts & Humanities",
 }
 
 # Dicionário dos 52 Países/Territórios (48 países + 4 nações do Reino Unido desagregadas):
@@ -256,20 +256,20 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 	# Tenta voltar para a Busca Avançada via clique interno (sem recarregar a página inteira)
 	voltou_interno = cdp.executar_js("""
 	(async () => {
-	  const esperar = (ms) => new Promise(r => setTimeout(r, ms));
-	  const visivel = (el) => el && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
+		const esperar = (ms) => new Promise(r => setTimeout(r, ms));
+		const visivel = (el) => el && el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0;
 
-	  if (visivel(document.querySelector("#advancedSearchInputArea"))) return true;
+		if (visivel(document.querySelector("#advancedSearchInputArea"))) return true;
 
-	  // Clica no link/botão de busca no menu lateral ou breadcrumb para voltar sem reload
-	  const btnMenuSearch = Array.from(document.querySelectorAll("a, button")).find(
+		// Clica no link/botão de busca no menu lateral ou breadcrumb para voltar sem reload
+		const btnMenuSearch = Array.from(document.querySelectorAll("a, button")).find(
 		el => visivel(el) && (/^(Search|Pesquisar|Advanced Search|Pesquisa avan[çc]ada)$/i.test(el.textContent.trim()) || (el.getAttribute("href") || "").includes("advanced-search"))
-	  );
-	  if (btnMenuSearch) {
+		);
+		if (btnMenuSearch) {
 		btnMenuSearch.click();
 		await esperar(1200);
-	  }
-	  return visivel(document.querySelector("#advancedSearchInputArea"));
+		}
+		return visivel(document.querySelector("#advancedSearchInputArea"));
 	})()
 	""")
 
@@ -280,112 +280,112 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 
 	js_script = f"""
 	(async () => {{
-	  const esperar = (ms) => new Promise(r => setTimeout(r, ms));
-	  const regexCat = /Countries\\/Regions|Pa[íi]ses\\/Regi[õo]es|Pa[íi]ses\\/Territ[óo]rios/i;
-	  const queryStr = {json.dumps(query_wos)};
-	  const visivel = (el) => {{
+		const esperar = (ms) => new Promise(r => setTimeout(r, ms));
+		const regexCat = /Countries\\/Regions|Pa[íi]ses\\/Regi[õo]es|Pa[íi]ses\\/Territ[óo]rios/i;
+		const queryStr = {json.dumps(query_wos)};
+		const visivel = (el) => {{
 		if (!el) return false;
 		const rect = el.getBoundingClientRect();
 		return rect.width > 0 && rect.height > 0;
-	  }};
-	  const foraDoMenu = (el) => !el.closest("header, app-header, nav, aside, footer, [role='navigation']");
+		}};
+		const foraDoMenu = (el) => !el.closest("header, app-header, nav, aside, footer, [role='navigation']");
 
-	  // 1. Aguarda a caixa #advancedSearchInputArea (ou clica em Advanced Search se cair na home)
-	  let caixa = null;
-	  const t0 = Date.now();
-	  while (Date.now() - t0 < 25000) {{
+		// 1. Aguarda a caixa #advancedSearchInputArea (ou clica em Advanced Search se cair na home)
+		let caixa = null;
+		const t0 = Date.now();
+		while (Date.now() - t0 < 25000) {{
 		caixa = document.querySelector("#advancedSearchInputArea");
 		if (visivel(caixa)) break;
 
 		const linksAdv = Array.from(document.querySelectorAll(
-		  "a[href*='advanced-search'], a[data-ta*='advanced'], button[data-ta*='advanced'], a, button"
+			"a[href*='advanced-search'], a[data-ta*='advanced'], button[data-ta*='advanced'], a, button"
 		)).filter(el => visivel(el) && foraDoMenu(el));
 
 		const btnAdv = linksAdv.find(el => {{
-		  const txt = el.textContent.trim();
-		  const href = (el.getAttribute("href") || "").toLowerCase();
-		  return /^(Advanced Search|Pesquisa avan[çc]ada)$/i.test(txt) || href.includes("advanced-search");
+			const txt = el.textContent.trim();
+			const href = (el.getAttribute("href") || "").toLowerCase();
+			return /^(Advanced Search|Pesquisa avan[çc]ada)$/i.test(txt) || href.includes("advanced-search");
 		}});
 
 		if (btnAdv) {{
-		  btnAdv.click();
-		  await esperar(1500);
+			btnAdv.click();
+			await esperar(1500);
 		}} else {{
-		  await esperar(400);
+			await esperar(400);
 		}}
-	  }}
+		}}
 
-	  if (!visivel(caixa)) {{
+		if (!visivel(caixa)) {{
 		throw new Error("Caixa #advancedSearchInputArea não encontrada.");
-	  }}
+		}}
 
-	  // Limpa e preenche a query
-	  caixa.focus();
-	  const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
-	  setter.call(caixa, "");
-	  caixa.dispatchEvent(new Event("input", {{ bubbles: true }}));
-	  await esperar(150);
-	  setter.call(caixa, queryStr);
-	  caixa.dispatchEvent(new Event("input", {{ bubbles: true }}));
-	  caixa.dispatchEvent(new Event("change", {{ bubbles: true }}));
-	  await esperar(600);
+		// Limpa e preenche a query
+		caixa.focus();
+		const setter = Object.getOwnPropertyDescriptor(window.HTMLTextAreaElement.prototype, "value").set;
+		setter.call(caixa, "");
+		caixa.dispatchEvent(new Event("input", {{ bubbles: true }}));
+		await esperar(150);
+		setter.call(caixa, queryStr);
+		caixa.dispatchEvent(new Event("input", {{ bubbles: true }}));
+		caixa.dispatchEvent(new Event("change", {{ bubbles: true }}));
+		await esperar(600);
 
-	  // 2. Clica no botão Search EXCLUSIVO da Busca Avançada
-	  let btnSearch = document.querySelector('button[data-ta="run-search-button"]');
-	  if (!visivel(btnSearch)) {{
+		// 2. Clica no botão Search EXCLUSIVO da Busca Avançada
+		let btnSearch = document.querySelector('button[data-ta="run-search-button"]');
+		if (!visivel(btnSearch)) {{
 		const candidatosSearch = Array.from(
-		  document.querySelectorAll(".search-button-container button, app-advanced-search button, main button, form button")
+			document.querySelectorAll(".search-button-container button, app-advanced-search button, main button, form button")
 		).filter(b => visivel(b) && foraDoMenu(b));
 
 		btnSearch = candidatosSearch.find(b => /^(Search|Pesquisar)$/i.test(b.textContent.trim()));
-	  }}
+		}}
 
-	  if (!visivel(btnSearch)) {{
+		if (!visivel(btnSearch)) {{
 		throw new Error("Botão Search da Busca Avançada não encontrado.");
-	  }}
-	  btnSearch.click();
+		}}
+		btnSearch.click();
 
-	  // 3. Aguarda o botão "Analyze results" OU mensagem de "0 registros encontrados"
-	  let btnAnalyze = null;
-	  const t1 = Date.now();
-	  while (Date.now() - t1 < 35000) {{
+		// 3. Aguarda o botão "Analyze results" OU mensagem de "0 registros encontrados"
+		let btnAnalyze = null;
+		const t1 = Date.now();
+		while (Date.now() - t1 < 35000) {{
 		const textoPag = document.body.innerText || "";
 		if (/No records match your query|Nenhum registro corresponde|Your search found no records/i.test(textoPag)) {{
-		  return "SEM_REGISTROS";
+			return "SEM_REGISTROS";
 		}}
 		const candidatos = Array.from(document.querySelectorAll("a, button")).filter(el => visivel(el) && foraDoMenu(el));
 		btnAnalyze = candidatos.find(el => /Analyze results|Analisar resultados/i.test(el.textContent));
 		if (btnAnalyze) break;
 		await esperar(500);
-	  }}
-	  if (!btnAnalyze) throw new Error("Botão 'Analyze results' não apareceu.");
-	  await esperar(800);
-	  btnAnalyze.click();
+		}}
+		if (!btnAnalyze) throw new Error("Botão 'Analyze results' não apareceu.");
+		await esperar(800);
+		btnAnalyze.click();
 
-	  // 4. Aguarda a tela Analyze Results carregar
-	  let btnDownload = null;
-	  const t2 = Date.now();
-	  while (Date.now() - t2 < 35000) {{
+		// 4. Aguarda a tela Analyze Results carregar
+		let btnDownload = null;
+		const t2 = Date.now();
+		while (Date.now() - t2 < 35000) {{
 		if (/analyze-results/i.test(window.location.href)) {{
-		  const btns = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
-		  btnDownload = btns.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
-		  if (btnDownload) break;
+			const btns = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
+			btnDownload = btns.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
+			if (btnDownload) break;
 		}}
 		await esperar(500);
-	  }}
-	  if (!btnDownload) throw new Error("Tela Analyze Results não carregou a tempo.");
-	  await esperar(1200);
+		}}
+		if (!btnDownload) throw new Error("Tela Analyze Results não carregou a tempo.");
+		await esperar(1200);
 
-	  // 5. Seleciona "Countries/Regions" (Países/Regiões) no menu da página Analyze Results
-	  const seletores = Array.from(document.querySelectorAll(
+		// 5. Seleciona "Countries/Regions" (Países/Regiões) no menu da página Analyze Results
+		const seletores = Array.from(document.querySelectorAll(
 		"app-analyze-results wos-select button, app-analyze-results mat-select, main wos-select button, main mat-select, wos-select button, mat-select, [aria-haspopup='listbox']"
-	  )).filter(el => visivel(el) && foraDoMenu(el));
+		)).filter(el => visivel(el) && foraDoMenu(el));
 
-	  let dropdownCat = seletores.find(el => /Web of Science Categories|Categorias da Web of Science|Citation Topics|T[óo]picos de cita[çc][ãa]o|Countries|Pa[íi]ses|Research Areas|Áreas de pesquisa/i.test(el.textContent)) || seletores[0];
+		let dropdownCat = seletores.find(el => /Web of Science Categories|Categorias da Web of Science|Citation Topics|T[óo]picos de cita[çc][ãa]o|Countries|Pa[íi]ses|Research Areas|Áreas de pesquisa/i.test(el.textContent)) || seletores[0];
 
-	  if (!dropdownCat) throw new Error("Seletor de categoria da página Analyze Results não encontrado.");
+		if (!dropdownCat) throw new Error("Seletor de categoria da página Analyze Results não encontrado.");
 
-	  if (!regexCat.test(dropdownCat.textContent.trim())) {{
+		if (!regexCat.test(dropdownCat.textContent.trim())) {{
 		dropdownCat.scrollIntoView({{ block: "center" }});
 		await esperar(300);
 		dropdownCat.click();
@@ -394,51 +394,51 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		let opcaoCat = null;
 		const t3 = Date.now();
 		while (Date.now() - t3 < 15000) {{
-		  const candidatosOpcao = Array.from(document.querySelectorAll(
+			const candidatosOpcao = Array.from(document.querySelectorAll(
 			'[role="option"], mat-option, .mat-option-text, .options-list li, .wos-select-options button, .wos-select-options li, wos-select li, wos-select button, .cdk-overlay-container [role="option"], .cdk-overlay-container button, .cdk-overlay-container li, .cdk-overlay-container span'
-		  )).filter(el => visivel(el) && el !== dropdownCat);
+			)).filter(el => visivel(el) && el !== dropdownCat);
 
-		  opcaoCat = candidatosOpcao.find(el => {{
+			opcaoCat = candidatosOpcao.find(el => {{
 			const txt = el.textContent.trim();
 			return txt.length < 60 && regexCat.test(txt);
-		  }});
+			}});
 
-		  if (opcaoCat) break;
-		  await esperar(400);
+			if (opcaoCat) break;
+			await esperar(400);
 		}}
 
 		if (!opcaoCat) {{
-		  throw new Error("Opção 'Countries/Regions' não encontrada no menu aberto.");
+			throw new Error("Opção 'Countries/Regions' não encontrada no menu aberto.");
 		}}
 
 		opcaoCat.scrollIntoView({{ block: "nearest" }});
 		opcaoCat.click();
 		await esperar(2500);
-	  }}
+		}}
 
-	  // 6. Marca "All data rows (up to 100,000)" para baixar todos os países
-	  const radios = Array.from(document.querySelectorAll("mat-radio-button, label, input[type='radio']"));
-	  const radioAll = radios.find(el => visivel(el) && /All data rows|Todas as linhas/i.test(el.textContent || (el.parentElement && el.parentElement.textContent) || ""));
-	  if (radioAll) {{
+		// 6. Marca "All data rows (up to 100,000)" para baixar todos os países
+		const radios = Array.from(document.querySelectorAll("mat-radio-button, label, input[type='radio']"));
+		const radioAll = radios.find(el => visivel(el) && /All data rows|Todas as linhas/i.test(el.textContent || (el.parentElement && el.parentElement.textContent) || ""));
+		if (radioAll) {{
 		const inputInterno = radioAll.querySelector("input[type='radio']") || radioAll;
 		inputInterno.click();
 		await esperar(500);
-	  }}
+		}}
 
-	  // 7. Aguarda o botão "Download data table" ficar pronto (até 20s) e clica nele
-	  let btnDownloadFinal = null;
-	  const t4 = Date.now();
-	  while (Date.now() - t4 < 20000) {{
+		// 7. Aguarda o botão "Download data table" ficar pronto (até 20s) e clica nele
+		let btnDownloadFinal = null;
+		const t4 = Date.now();
+		while (Date.now() - t4 < 20000) {{
 		const btnsDl = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
 		btnDownloadFinal = btnsDl.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
 		if (btnDownloadFinal) break;
 		await esperar(500);
-	  }}
-	  if (!btnDownloadFinal) throw new Error("Botão 'Download data table' não encontrado após selecionar Countries/Regions.");
-	  btnDownloadFinal.scrollIntoView({{ block: "center" }});
-	  await esperar(300);
-	  btnDownloadFinal.click();
-	  return "OK";
+		}}
+		if (!btnDownloadFinal) throw new Error("Botão 'Download data table' não encontrado após selecionar Countries/Regions.");
+		btnDownloadFinal.scrollIntoView({{ block: "center" }});
+		await esperar(300);
+		btnDownloadFinal.click();
+		return "OK";
 	}})()
 	"""
 
@@ -486,11 +486,11 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, total_esperado_arquivo
 		for n in nomes_wos:
 			mapa_pais_iso[n.upper()] = iso
 
-	agregado_52_paises = {}  # (ano, cod_topico, iso) -> artigos
+	agregado_52_paises = {}	# (ano, cod_topico, iso) -> artigos
 	pares_processados = set()
 
 	for arq in arquivos:
-		nome_base = Path(arq).stem  # Ex: wos_2000_topico_01
+		nome_base = Path(arq).stem	# Ex: wos_2000_topico_01
 		partes = nome_base.split("_")
 		if len(partes) < 4:
 			continue
@@ -535,7 +535,7 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, total_esperado_arquivo
 		f.write("ano,iso_pais,pais_nome,id_macro_topico,macro_topico,artigos\n")
 		for (ano, cod_top, iso), cont in sorted(agregado_52_paises.items()):
 			pais_pt = PAISES_52[iso][0]
-			nome_top = MACRO_TOPICOS_10[cod_top][0]
+			nome_top = MACRO_TOPICOS_10[cod_top]
 			pais_esc = f'"{pais_pt}"' if "," in pais_pt else pais_pt
 			top_esc = f'"{nome_top}"' if "," in nome_top else nome_top
 			f.write(f"{ano},{iso},{pais_esc},{cod_top},{top_esc},{cont}\n")
@@ -595,7 +595,7 @@ def main():
 	print("INSTRUÇÕES PARA O USUÁRIO:")
 	print("1. Na janela do navegador que abriu, acesse a Web of Science.")
 	print("2. Aguarde a tela inicial da Web of Science (Core Collection) abrir")
-	print("   e feche eventuais avisos de cookies ou pop-ups.")
+	print("	 e feche eventuais avisos de cookies ou pop-ups.")
 	print("=" * 70 + "\n")
 
 	input(">>> Pressione ENTER aqui quando estiver na tela da Web of Science... ")
@@ -609,9 +609,10 @@ def main():
 
 	# Lista de 260 buscas (26 anos x 10 Macro-Tópicos TMAC)
 	itens_busca = []
+
 	for ano in ANOS:
-		for cod_topico, (nome_topico, clausula_tmac) in sorted(MACRO_TOPICOS_10.items()):
-			query_wos = f"PY={ano} AND TMAC=({clausula_tmac}){filtro_doc}"
+		for cod_topico, nome_topico in sorted(MACRO_TOPICOS_10.items()):
+			query_wos = f'PY={ano} AND TMAC="{cod_topico} {nome_topico}"{filtro_doc}'
 			itens_busca.append((cod_topico, nome_topico, query_wos, ano))
 
 	total = len(itens_busca)

@@ -3,6 +3,8 @@
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
+#
+# Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
 # 3. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
 
@@ -52,15 +54,15 @@ url_api <- paste0(
 	"&format=csvfile"
 )
 
-output_file <- file.path(input_dir, "OCDE_patentes_por_campo.csv")
-
 status_download <- tryCatch({
 	download.file(
 		url = url_api,
-		destfile = output_file,
+		destfile = file.path(input_dir, "OCDE_patentes_por_campo.csv"),
 		mode     = "wb",
 		quiet    = TRUE
 	)
 }, error = function(e) {
 	stop("Falha no download: ", e$message)
 })
+
+rm(url_api, status_download)

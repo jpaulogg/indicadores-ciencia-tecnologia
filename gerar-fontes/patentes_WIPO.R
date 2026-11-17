@@ -3,6 +3,8 @@
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
+#
+# Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
 # 3. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
 
@@ -31,13 +33,10 @@ cabecalhos <- c(
 	"Sec-Fetch-Mode"  = "cors",
 	"Sec-Fetch-Site"  = "same-site"
 )
-
-output_file <- file.path(input_dir, "WIPO_patentes_USPTO_2000_2008.csv")
-
 status_download <- tryCatch({
 	download.file(
 		url      = wipo_url,
-		destfile = output_file,
+		destfile = file.path(input_dir, "WIPO_USPTO_2000_2008.csv"),
 		method   = "libcurl",
 		headers  = cabecalhos,
 		mode     = "wb",
@@ -46,3 +45,5 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha na conexão HTTP com o servidor da WIPO: ", e$message)
 })
+
+rm(url_api, status_download)
