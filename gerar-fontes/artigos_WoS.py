@@ -4,7 +4,7 @@
 """
 Automação de Coleta e Consolidação - Web of Science (2000 a 2025)
 Estratégia: 26 Anos x 10 Macro-Tópicos (TMAC) = 260 downloads
-Saída única: ../../fontes/wos_painel.csv
+Saída única: ../../fontes/wos_artigos.csv
 Reino Unido desagregado (Inglaterra, Escócia, País de Gales e Irlanda do Norte).
 Pergunta ao usuário antes de remover os arquivos brutos em temp_dl_wos.
 """
@@ -563,7 +563,7 @@ def main():
 	# Diretório de saída final: ../../fontes
 	pasta_fontes = (pasta_raiz / ".." / "fontes").resolve()
 	os.makedirs(pasta_fontes, exist_ok=True)
-	arquivo_csv_saida = os.path.join(pasta_fontes, "wos_painel.csv")
+	arquivo_csv_saida = os.path.join(pasta_fontes, "wos_artigos.csv")
 
 	# Diretório temporário de downloads subdividido em "em_andamento" e "concluidos"
 	pasta_base_temp = os.path.join(pasta_raiz, "temp_dl_wos")

@@ -2,14 +2,15 @@
 # de matriculados e concluintes/titulados em cursos de bacharelado,
 # mestrado e doutorado.
 #
-# Autor: João Paulo Garcia
+# autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
-# -------------------------------------------
+#
 # Os seguintes objetos estão definidos em "setup.R":
 # ... dl_dir (diretório de rotinas para baixar fontes)
 # ... input_dir (diretório de fonte de dados)
 # ... periodo (por padrão, 2000:2025)
 # ... mapa_paises (siglas ISO3 e ISO2 de grupos de países selecionados)
+# -------------------------------------------
 
 # LEITURA DOS DADOS
 
@@ -50,7 +51,7 @@ dados_ocde <- dados_ocde[, names(colunas_ocde)]
 dados_ocde$OBS_VALUE[dados_ocde$OBS_STATUS == "M"] <- 0
 
 # 2. UNESCO - Other Policy Relevant Indicators (Education – OPRI)
-dados_unesco <- read.csv(file.path(input_dir, "educ_UNESCO.csv"))
+dados_unesco <- read.csv(file.path(input_dir, "UNESCO_EDUC_OPRI.csv"))
 
 # -------------------------------------------
 # FUNÇÕES

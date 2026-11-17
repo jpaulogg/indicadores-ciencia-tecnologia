@@ -3,7 +3,9 @@
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
-# -------------------------------------------
+#
+# Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
+# ------------------------------------------------------------
 
 # preparar ambiente
 if (!requireNamespace("jsonlite", quietly = TRUE)) {
@@ -21,23 +23,13 @@ id_unesco <- c(
     "21209",   # Researchers (HC) - Government
     "21213",   # Researchers (HC) - Higher education
     "21217",   # Researchers (HC) - Private non-profit
-    "21000",   # Total R&D personnel (HC) - Total
-    "21204",   # Total R&D personnel (HC) - Business enterprise
-    "21208",   # Total R&D personnel (HC) - Government
-    "21212",   # Total R&D personnel (HC) - Higher education
-    "21216",   # Total R&D personnel (HC) - Private non-profit
 
     # sexo feminino
     "21105",   # Researchers (HC) - Female
     "21726",   # Researchers (HC) - Female - Business enterprise
     "21727",   # Researchers (HC) - Female - Government
     "21728",   # Researchers (HC) - Female - Higher education
-    "21729",   # Researchers (HC) - Female - Private non-profit
-	"21104",   # Total R&D personnel (HC) - Female
-	"21706",   # Total R&D personnel (HC) - Female - Business enterprise
-	"21707",   # Total R&D personnel (HC) - Female - Government
-	"21708",   # Total R&D personnel (HC) - Female - Higher education
-	"21709"    # Total R&D personnel (HC) - Female - Private non-profit
+    "21729"    # Researchers (HC) - Female - Private non-profit
 )
 
 base_url <- "https://api.uis.unesco.org/api/public/data/indicators"
