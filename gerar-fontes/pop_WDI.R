@@ -1,0 +1,45 @@
+# Rotina para automatizar o download de dados utilizados na
+# construção de indicadores de Ciência, Tecnologia e Inovação
+#
+# Autor: João Paulo Garcia
+# email: joao.garcia@fjp.mg.gov.br
+#
+# Obs: o objeto `input_dir` está definido no script "setup.R".
+# -------------------------------------------
+# 5. POPULAÇÃO
+
+# 5.2 - Banco Mundial (WDI)
+
+id_bm <- c(
+    "SP.POP.TOTL",       # Population, total
+    "SP.POP.TOTL.FE.IN", # Population, female
+    "SP.POP.TOTL.MA.IN"  # Population, male
+)
+
+api_url <- paste0(
+    "https://api.worldbank.org/v2/country/",
+    paste(mapa_paises$ISO3, collapse = ";"),
+    "/indicator/",
+    paste(id_bm, collapse = ";"),
+    "?source=2",
+    "&date=", min(periodo), ":", max(periodo),
+    "&downloadformat=csv",
+    "&dataformat=list"
+)
+
+arquivo_zip <- tempfile(fileext = ".zip")
+
+download.file(
+    url = api_url,
+    destfile = arquivo_zip,
+    mode = "wb"
+)
+
+unzip(
+    arquivo_zip,
+    exdir = file.path(input_dir, "WDI_pop_mundial"),
+    junkpaths = TRUE
+)
+
+unlink(arquivo_zip)
+rm(id_bm, api_url, arquivo_zip)
