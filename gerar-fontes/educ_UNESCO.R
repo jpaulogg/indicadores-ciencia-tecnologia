@@ -6,9 +6,10 @@
 #
 # Obs: mapa_paises, periodo e input_dir são definidos em `setup.R`.
 # -------------------------------------------
-# 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
-
-# 1.2  UNESCO - Education OPRI
+# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# .. 1.1 EDUCAÇÃO SUPERIOR
+#
+# Base de dados: UNESCO - Education OPRI
 
 id_unesco <- c(
 	"FOSGP.5T8.F500600700",   # % of graduates from STEM

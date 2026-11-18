@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 3. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
-
-# 3.1 OCDE - Patents by technology
+# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
+# .. 2.1 PATENTES
+#
+# Base de dados: OCDE - Patents by technology
 
 url_api <- paste0(
 	# host URL

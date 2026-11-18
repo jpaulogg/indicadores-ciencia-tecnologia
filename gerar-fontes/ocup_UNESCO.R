@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
 # ------------------------------------------------------------
-# 3. OCUPAÇÃO EM ATIVIDADES DE C&T E P&D
-
-# 3.1 - UNESCO
+# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# .. 1.2 NÚMERO DE PESQUISADORES
+#
+# Base de dados: UNESCO - Science and Technology OPRI
 
 id_unesco <- c(
 	# ambos os sexos

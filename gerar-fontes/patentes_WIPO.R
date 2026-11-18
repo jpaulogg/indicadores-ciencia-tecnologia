@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 3. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
-
-# 3.2 WIPO - IP Statiscs Data Center
+# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
+# .. 2.1 PATENTES
+#
+# Base de dados: WIPO - IP Statiscs Data Center
 # Indicador: Total patent applications (direct and PCT)
 
 wipo_url <- paste0(

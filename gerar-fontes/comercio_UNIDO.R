@@ -1,11 +1,17 @@
 # Rotina para automatizar o download de dados utilizados na
 # construção de indicadores de Ciência, Tecnologia e Inovação
+
+# Autor: João Paulo Garcia
+# email: joao.garcia@fjp.mg.gov.br
 #
 # Obs.: `input_dir` e `periodo` são definidos em "setup.R".
 # -----------------------------------------------------------------
-# COMÉRCIO INTERNACIONAL - UNIDO (Manufacturing Trade Database)
-# Exportação de todos os países em um único ZIP, sem tratar os dados.
+# 5. TRANSFERÊNCIA DE TECNOLOGIA
+# .. 5.1 COMÉRCIO INTERNACIONAL DE PRODUTOS DE MÉDIA-ALTA TECNOLOGIA
+#
+# Base de dados: UNIDO (Manufacturing Trade Database)
 
+# Preparar ambiente
 if (!requireNamespace("jsonlite", quietly = TRUE)) {
 	stop("Instale o pacote jsonlite: install.packages('jsonlite')")
 }

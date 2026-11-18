@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 1. EDUCAÇÃO FORMAL DE NÍVEL SUPERIOR
-
-# 1.1 OCDE - Student (full database)
+# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# .. 1.1 EDUCAÇÃO SUPERIOR
+#
+# Base de dados: OCDE - Student (full database)
 
 url_api <- paste0(
 	# host URL

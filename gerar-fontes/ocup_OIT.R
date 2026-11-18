@@ -6,13 +6,14 @@
 #
 # Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
 # ------------------------------------------------------------
-# 3. OCUPAÇÃO EM ATIVIDADES DE C&T E P&D
-
-# 3.2 - Organização Internacional do Trabalho (ILOSTAT)
+# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# .. 1.3 EMPREGOS EM ÁREAS STEM
+#
+# Base de dados: ILOSTAT
 
 id_ilostat <- c(
-	"EMP_STEM_SEX_STE_NB_A", # ocupação STEM
-	"EMP_TEMP_AGE_STE_NB_A"  # ocupação total
+	"EMP_STEM_SEX_STE_NB_A", # empregos STEM
+	"EMP_TEMP_AGE_STE_NB_A"  # empregos total
 )
 
 for (id in id_ilostat) {

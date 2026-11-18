@@ -7,9 +7,10 @@
 # Obs: os objetos `input_dir`, `mapa_paises` e `periodo`
 # estão definidos no script "setup.R".
 # -------------------------------------------
-# 6. PRODUTO INTERNO BRUTO (PIB)
-
-# 6.1 - Banco Mundial (WDI)
+# 6. INDICADORES SOCIOECONÔMICOS
+# .. 6.1 PIB
+#
+# Base de dados: Banco Mundial (WDI)
 
 id_bm <- c(
     "NY.GDP.MKTP.PP.CD", # GDP, PPP (current international $)

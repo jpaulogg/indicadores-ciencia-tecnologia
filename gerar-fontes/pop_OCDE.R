@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 5. POPULAÇÃO
-
-# 5.1 OCDE - Historical population data
+# 6. INDICADORES SOCIOECONÔMICOS
+# .. 6.1 POPULAÇÃO
+#
+# Base de dados: OCDE - Historical population data
 
 url_api <- paste0(
 	# host URL
