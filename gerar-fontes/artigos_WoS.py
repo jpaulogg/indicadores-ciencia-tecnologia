@@ -3,10 +3,10 @@
 
 """
 Automação de Coleta e Consolidação - Web of Science (2000 a 2025)
-Estratégia: 26 Anos x 10 Macro-Tópicos (TMAC) = 260 downloads
-Saída única: ../../fontes/wos_artigos.csv
-Reino Unido desagregado (Inglaterra, Escócia, País de Gales e Irlanda do Norte).
-Pergunta ao usuário antes de remover os arquivos brutos em temp_dl_wos.
+Estratégia: 26 Anos x 10 Macro-Tópicos (TMAC) = 260 downloads Saída
+única: ../../fontes/wos_artigos.csv Reino Unido desagregado (Inglaterra,
+Escócia, País de Gales e Irlanda do Norte). Pergunta ao usuário antes de
+remover os arquivos brutos em temp_dl_wos.
 """
 
 import os
@@ -25,7 +25,7 @@ from pathlib import Path
 # 1. AUTO-INSTALAÇÃO DE PACOTES E AJUSTE DO TERMINAL WINDOWS
 # ==============================================================================
 def desativar_quickedit_windows():
-	"""Impede que um clique acidental na janela do PowerShell congele o script."""
+	"""Evita que um clique acidental no PowerShell congele o script."""
 	if os.name == "nt":
 		try:
 			import ctypes
@@ -55,16 +55,17 @@ def garantir_ambiente_e_pacotes():
 		python_venv = pasta_venv / "bin" / "python"
 
 	if not python_venv.exists():
-		print("[Setup] Criando ambiente virtual local (.venv_wos)...")
+		print("Criando ambiente virtual local (.venv_wos)...")
 		import venv
 		venv.create(str(pasta_venv), with_pip=True)
 
-	print("[Setup] Instalando pacote 'websocket-client' no ambiente local...")
+	print("Instalando pacote 'websocket-client' no ambiente local...")
 	subprocess.check_call([
-		str(python_venv), "-m", "pip", "install", "--quiet", "--upgrade", "websocket-client"
+		str(python_venv), "-m", "pip", "install", "--quiet", "--upgrade",
+			"websocket-client"
 	])
 
-	print("[Setup] Reiniciando o script dentro do ambiente configurado...\n")
+	print("Reiniciando o script dentro do ambiente configurado...\n")
 	res = subprocess.run([str(python_venv), str(Path(__file__).resolve())] + sys.argv[1:])
 	sys.exit(res.returncode)
 

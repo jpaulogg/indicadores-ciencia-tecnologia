@@ -20,10 +20,7 @@ url_api <- paste0(
 	# versao da base de dados
 	"1.1/",
 	# paises (disponível: 38 da OCDE + 5)
-	"ISR+JPN+KOR+USA",
-	"+AUS+AUT+BEL+CAN+CHE+DEU+DNK+FIN+GBR+IRL+ISL+LUX+NLD+NOR+NZL+SWE",
-	"+BGR+CZE+ESP+EST+FRA+GRC+HRV+HUN+ITA+LTU+LVA+POL+PRT+SVK+SVN",
-	"+BRA+CHL+COL+CRI+MEX+PER+ROU+TUR.",
+	paste(mapa_paises$ISO3, collapse = "+"), ".",
 	# nivel educacional (bacharelado + mestrado + doutorado)
 	"ISCED11_6+ISCED11_7+ISCED11_8.",
 	# especificação de medida (matriculados + concluintes)
@@ -44,7 +41,6 @@ url_api <- paste0(
 	"F+M._T?",
 	# recorte temporal (anos disponíveis: 2005, 2010-2024)
 	"startPeriod=2010",
-	"&endPeriod=2024",
 	# representação tabular direta em linhas e colunas
 	"&dimensionAtObservation=AllDimensions",
 	# formato csv (para adicionar rótulos, 'csvfilewithlabels')

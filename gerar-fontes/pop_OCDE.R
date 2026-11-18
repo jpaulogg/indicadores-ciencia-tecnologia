@@ -20,11 +20,7 @@ url_api <- paste0(
 	# versao da base de dados
 	"1.0/",
 	# paises (disponível: 38 da OCDE + 17)
-	"ISR+JPN+KOR+USA",
-	"+AUS+AUT+BEL+CAN+CHE+DEU+DNK+FIN+GBR+IRL+ISL+LUX+NLD+NOR+NZL+SGP+SWE",
-	"+CHN",
-	"+BGR+CZE+ESP+EST+FRA+GRC+HRV+HUN+ITA+LTU+LVA+POL+PRT+SVK+SVN",
-	"+ARG+BRA+CHL+COL+CRI+IND+MEX+PER+ROU+RUS+TUR+ZAF.",
+	paste(mapa_paises$ISO3, collapse = "+"), ".",
 	# especificação de medida (matriculados + concluintes)
 	"POP.",
 	# unidade de medida (PS = contagem de pessoas)

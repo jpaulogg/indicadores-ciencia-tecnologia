@@ -28,10 +28,7 @@ url_api <- paste0(
 	# data de referência (prioridade)
 	"PRIORITY.",
 	# paises (disponível: 38 da OCDE + 17)
-	"ISR+JPN+KOR+USA",
-	"+AUS+AUT+BEL+CAN+CHE+DEU+DNK+FIN+GBR+IRL+ISL+LUX+NLD+NOR+NZL+SWE",
-	"+BGR+CZE+ESP+EST+FRA+GRC+HRV+HUN+ITA+LTU+LVA+POL+PRT+SVK+SVN",
-	"+BRA+CHL+COL+CRI+MEX+PER+ROU+TUR.",
+	paste(mapa_paises$ISO3, collapse = "+"), ".",
 	# país do parceiro (_Z = não se aplica)
 	"_Z.",
 	# papel do agente residente no país (iventor ou depositante)
