@@ -6,12 +6,6 @@
 #
 # Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
 # ------------------------------------------------------------
-
-# preparar ambiente
-if (!requireNamespace("jsonlite", quietly = TRUE)) {
-	install.packages("jsonlite")
-}
-
 # 3. OCUPAÇÃO EM ATIVIDADES DE C&T E P&D
 
 # 3.2 - Organização Internacional do Trabalho (ILOSTAT)
