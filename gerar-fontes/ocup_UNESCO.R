@@ -4,7 +4,8 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 #
-# Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
+# Obs: os objetos `mapa_paises`, `input_dir` e `periodo são
+# definido em # "../setup.R".
 # ------------------------------------------------------------
 # 1.. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
 # 1.2 NÚMERO DE PESQUISADORES

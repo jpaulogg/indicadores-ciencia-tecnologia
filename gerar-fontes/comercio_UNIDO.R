@@ -4,7 +4,7 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 #
-# Obs.: `input_dir` e `periodo` são definidos em "setup.R".
+# Obs.: `input_dir` e `periodo` são definidos em "../setup.R".
 # -----------------------------------------------------------------
 # 5.. TRANSFERÊNCIA DE TECNOLOGIA
 # 5.1 COMÉRCIO INTERNACIONAL DE PRODUTOS DE MÉDIA-ALTA TECNOLOGIA

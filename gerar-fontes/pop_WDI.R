@@ -4,7 +4,8 @@
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 #
-# Obs: o objeto `input_dir` está definido no script "setup.R".
+# Obs: os objetos `mapa_paises`, `input_dir` e `periodo são
+# definido em # "../setup.R".
 # -------------------------------------------
 # 6.. INDICADORES SOCIOECONÔMICOS
 # 6.2 POPULAÇÃO

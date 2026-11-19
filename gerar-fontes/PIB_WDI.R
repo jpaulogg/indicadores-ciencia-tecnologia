@@ -5,7 +5,7 @@
 # email: joao.garcia@fjp.mg.gov.br
 #
 # Obs: os objetos `input_dir`, `mapa_paises` e `periodo`
-# estão definidos no script "setup.R".
+# estão definidos no script "../setup.R".
 # -------------------------------------------
 # 6.. INDICADORES SOCIOECONÔMICOS
 # 6.1 PIB
