@@ -17,16 +17,16 @@
 # 1. OCDE - Number of enrolled students, graduates
 # .......... and new entrants by field of education
 
-arquivo_ocde <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
-dl_script <- file.path(dl_dir, "educ_OCDE.R")
+arq_unesco <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
+dl_ocde <- file.path(dl_dir, "educ_OCDE.R")
 
-if (!file.exists(arquivo_ocde)) {
+if (!file.exists(arq_unesco)) {
 	resposta <- readline(paste0(
 		"O arquivo 'OCDE_estudantes_por_campo.csv' não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
-		source(dl_script, chdir = TRUE)
+		source(dl_ocde, chdir = TRUE)
 	} else {
 		stop("Download cancelado")
 	}
@@ -44,14 +44,30 @@ colunas_ocde <- c(
 	"OBS_VALUE"       = "numeric"
 )
 
-dados_ocde <- read.csv(arquivo_ocde, colClasses = colunas_ocde)
+dados_ocde <- read.csv(arq_unesco, colClasses = colunas_ocde)
 dados_ocde <- dados_ocde[, names(colunas_ocde)]
 
 # OBS_STATUS == "M" significa valores que não podem existir
 dados_ocde$OBS_VALUE[dados_ocde$OBS_STATUS == "M"] <- 0
 
 # 2. UNESCO - Other Policy Relevant Indicators (Education – OPRI)
-dados_unesco <- read.csv(file.path(input_dir, "UNESCO_EDUC_OPRI.csv"))
+
+arq_unesco <- file.path(input_dir, "UNESCO_EDUC_OPRI.csv")
+dl_unesco <- file.path(dl_dir, "educ_UNESCO.R")
+
+if (!file.exists(arq_unesco)) {
+	resposta <- readline(paste0(
+		"O arquivo de dados não foi encontrado.",
+		" Deseja baixá-lo agora? (s/n): "
+	))
+	if (grepl(pattern = "^[SsYy]", resposta)) {
+		source(dl_unesco, chdir = TRUE)
+	} else {
+		stop("Download cancelado")
+	}
+}
+
+dados_unesco <- read.csv(arq_unesco)
 
 # -------------------------------------------
 # FUNÇÕES

@@ -126,4 +126,4 @@ unzip(
 	junkpaths = TRUE
 )
 unlink(arquivo_zip)
-message("Download concluído: ", pasta)
+message("Download concluído.")

@@ -15,17 +15,11 @@
 id_unesco <- c(
 	# ambos os sexos
     "21001",   # Researchers (HC) - Total
+    "21105",   # Researchers (HC) - Female
     "21205",   # Researchers (HC) - Business enterprise
     "21209",   # Researchers (HC) - Government
     "21213",   # Researchers (HC) - Higher education
-    "21217",   # Researchers (HC) - Private non-profit
-
-    # sexo feminino
-    "21105",   # Researchers (HC) - Female
-    "21726",   # Researchers (HC) - Female - Business enterprise
-    "21727",   # Researchers (HC) - Female - Government
-    "21728",   # Researchers (HC) - Female - Higher education
-    "21729"    # Researchers (HC) - Female - Private non-profit
+    "21217"    # Researchers (HC) - Private non-profit
 )
 
 params <- c(

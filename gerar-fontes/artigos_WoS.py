@@ -1,27 +1,32 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#
 # Rotina para automatizar o download de dados utilizados na
 # construção de indicadores de Ciência, Tecnologia e Inovação
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
-# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
-# .. 2.1 ARTIGOS
-# ...... Base de dados: Web of Science
+# 2.. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
+# 2.1 ARTIGOS
+#
+# Base de dados: Web of Science
 
 """
-Automação de Coleta e Consolidação - Web of Science (2000 a 2025)
-Estratégia: 26 Anos x 10 Macro-Tópicos (TMAC) = 260 downloads Saída
-única: ../../fontes/wos_artigos.csv Reino Unido desagregado (Inglaterra,
-Escócia, País de Gales e Irlanda do Norte). Pergunta ao usuário antes de
-remover os arquivos brutos em temp_dl_wos.
+Coleta e atualização incremental - Web of Science. Estratégia: consultar
+apenas os anos posteriores ao último ano consolidado. Sem consolidado
+prévio: coletar os anos definidos em ANOS. Saída:
+ict/fontes/WoS_artigos/consolidado.csv. Downloads intermediários:
+ict/fontes/WoS_artigos/desagregado/. Reino Unido desagregado
+(Inglaterra, Escócia, País de Gales e Irlanda do Norte). Os arquivos
+brutos podem ser removidos após uma consolidação completa.
 """
 
 import os
 import sys
 import time
 import json
+import csv
 import glob
 import random
 import shutil
@@ -30,9 +35,9 @@ import urllib.request
 from pathlib import Path
 
 
-# =========================================================================
+# ======================================================================
 # 1. AUTO-INSTALAÇÃO DE PACOTES E AJUSTE DO TERMINAL WINDOWS
-# =========================================================================
+# ======================================================================
 def desativar_quickedit_windows():
 	"""Evita que um clique acidental no PowerShell congele o script."""
 	if os.name == "nt":
@@ -84,20 +89,20 @@ garantir_ambiente_e_pacotes()
 import websocket	# noqa: E402
 
 
-# =========================================================================
-# 2. PARÂMETROS DA PESQUISA (26 ANOS x 10 MACRO-TÓPICOS x 52 PAÍSES/TERRITÓRIOS)
-# =========================================================================
+# ======================================================================
+# 2. PARÂMETROS DA PESQUISA (10 MACRO-TÓPICOS x 52 PAÍSES/TERRITÓRIOS)
+# ======================================================================
 
-ANOS = list(range(2000, 2026))	# 2000 a 2025 (26 anos)
-APENAS_ARTIGOS = False
+ANOS = list(range(2000, 2026))	# Em 2027, use range(2000, 2027) para incluir 2026.
+APENAS_ARTIGOS = True
 MAX_PASSADAS = 3
 
 # Os 10 Macro-Tópicos (TMAC = Macro Level Citation Topic)
 MACRO_TOPICOS_10 = {
 	1: "Clinical & Life Sciences",
 	2: "Chemistry",
-	3: "Agriculture,
-	4: "Electrical Engineering,
+	3: "Agriculture, Environment & Ecology",
+	4: "Electrical Engineering, Electronics & Computer Science",
 	5: "Physics",
 	6: "Social Sciences",
 	7: "Engineering & Materials Science",
@@ -164,9 +169,9 @@ PAISES_52 = {
 }
 
 
-# =========================================================================
+# ======================================================================
 # 3. CONTROLE DO NAVEGADOR VIA CHROME DEVTOOLS PROTOCOL
-# =========================================================================
+# ======================================================================
 def localizar_navegador():
 	candidatos = []
 	if os.name == "nt":
@@ -471,119 +476,194 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 	raise RuntimeError("Tempo esgotado aguardando o download do arquivo .txt.")
 
 
-# =========================================================================
-# 4. CONSOLIDAÇÃO DOS ARQUIVOS EM TABELA ÚNICA E VERIFICAÇÃO DE INTEGRIDADE
-# =========================================================================
-def consolidar_dados(pasta_concluidos, arquivo_csv_saida, total_esperado_arquivos):
-	"""
-	Consolida os arquivos .txt na tabela final de 52 países/territórios x 26 anos x 10 macro-tópicos.
-	Retorna True se todos os 260 arquivos esperados foram processados e a tabela
-	final foi gravada integralmente com sucesso.
-	"""
-	arquivos = sorted(
-		f for f in glob.glob(os.path.join(pasta_concluidos, "wos_*.txt"))
-		if os.path.getsize(f) > 0
-	)
-	if not arquivos:
-		print("\n[Consolidação] Nenhum arquivo .txt encontrado para consolidar.")
-		return False
+# ======================================================================
+# 4. LEITURA DO CONSOLIDADO E ATUALIZAÇÃO INCREMENTAL
+# ======================================================================
+COLUNAS_CSV = [
+	"ano", "iso_pais", "pais_nome", "id_macro_topico", "macro_topico", "artigos"
+]
 
-	print(f"\n[Consolidação] Processando {len(arquivos)}/{total_esperado_arquivos} arquivos baixados...")
 
-	# Mapa reverso: Nome WoS -> Código ISO dos 52 países/territórios
+def ler_consolidado(arquivo_csv_saida):
+	"""
+	Lê um consolidado existente e valida sua integridade.
+	Retorna um dicionário {(ano, cod_topico, iso): artigos} e o último ano.
+	Se não houver consolidado, retorna ({}, None).
+	"""
+	if not os.path.exists(arquivo_csv_saida):
+		return {}, None
+
+	registros = {}
+	with open(arquivo_csv_saida, "r", encoding="utf-8-sig", newline="") as f:
+		leitor = csv.DictReader(f)
+		if leitor.fieldnames != COLUNAS_CSV:
+			raise ValueError(
+				f"O consolidado existente tem colunas inesperadas: {leitor.fieldnames}. "
+				"O arquivo foi preservado sem alterações."
+			)
+
+		for num_linha, linha in enumerate(leitor, start=2):
+			try:
+				ano = int(linha["ano"])
+				cod_topico = int(linha["id_macro_topico"])
+				iso = linha["iso_pais"]
+				contagem = int(linha["artigos"])
+			except (ValueError, TypeError, KeyError) as erro:
+				raise ValueError(f"Consolidado inválido na linha {num_linha}: {erro}") from erro
+
+			if cod_topico not in MACRO_TOPICOS_10 or iso not in PAISES_52 or contagem < 0:
+				raise ValueError(f"Consolidado com código ou contagem inválida na linha {num_linha}.")
+			if linha["pais_nome"] != PAISES_52[iso][0] or linha["macro_topico"] != MACRO_TOPICOS_10[cod_topico]:
+				raise ValueError(f"Consolidado com nome divergente na linha {num_linha}.")
+
+			chave = (ano, cod_topico, iso)
+			if chave in registros:
+				raise ValueError(f"Consolidado com observação duplicada na linha {num_linha}: {chave}.")
+			registros[chave] = contagem
+
+	if not registros:
+		raise ValueError("O arquivo consolidado.csv existe, mas não contém observações.")
+
+	anos_presentes = sorted({ano for ano, _, _ in registros})
+	anos_esperados = set(range(anos_presentes[0], anos_presentes[-1] + 1))
+	if set(anos_presentes) != anos_esperados:
+		raise ValueError("O consolidado existente possui lacunas entre os anos já registrados.")
+
+	# Um ano só é considerado consolidado se tiver 10 tópicos x 52 países.
+	chaves_esperadas = {
+		(ano, cod_topico, iso)
+		for ano in anos_presentes
+		for cod_topico in MACRO_TOPICOS_10
+		for iso in PAISES_52
+	}
+	if set(registros) != chaves_esperadas:
+		faltam = len(chaves_esperadas - set(registros))
+		raise ValueError(
+			f"O consolidado existente está incompleto ({faltam} combinações ausentes). "
+			"O arquivo foi preservado; corrija-o antes de atualizar."
+		)
+
+	return registros, anos_presentes[-1]
+
+
+def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_anteriores):
+	"""
+	Consolida somente os downloads de anos novos, acrescentando os registros
+	históricos já presentes no CSV. Só substitui o arquivo se a coleta nova estiver
+	completa. Não precisa dos arquivos .txt históricos.
+	"""
+	pares_esperados = {(ano, cod_topico) for cod_topico, _, _, ano in itens_busca}
+	arquivos_novos = []
+	for ano, cod_topico in sorted(pares_esperados):
+		arquivo = os.path.join(pasta_concluidos, f"wos_{ano}_topico_{cod_topico:02d}.txt")
+		if not os.path.isfile(arquivo) or os.path.getsize(arquivo) == 0:
+			print(f"[Aviso] Download ausente: {os.path.basename(arquivo)}")
+			return False
+		arquivos_novos.append((ano, cod_topico, arquivo))
+
+	print(f"\n[Consolidação] Processando {len(arquivos_novos)} downloads de anos novos...")
+
 	mapa_pais_iso = {}
 	for iso, (_, nomes_wos) in PAISES_52.items():
-		for n in nomes_wos:
-			mapa_pais_iso[n.upper()] = iso
+		for nome in nomes_wos:
+			mapa_pais_iso[nome.upper()] = iso
 
-	agregado_52_paises = {}	# (ano, cod_topico, iso) -> artigos
-	pares_processados = set()
+	registros_novos = {}
+	for ano, cod_topico, arquivo in arquivos_novos:
+		# Todas as combinações do ano/tópico recebem zero, mesmo sem registros WoS.
+		for iso in PAISES_52:
+			registros_novos[(ano, cod_topico, iso)] = 0
 
-	for arq in arquivos:
-		nome_base = Path(arq).stem	# Ex: wos_2000_topico_01
-		partes = nome_base.split("_")
-		if len(partes) < 4:
-			continue
-		try:
-			ano = int(partes[1])
-			cod_topico = int(partes[3])
-		except ValueError:
-			continue
+		with open(arquivo, "r", encoding="utf-8-sig", errors="replace") as f:
+			linhas = [linha.rstrip("\r\n") for linha in f if linha.strip()]
+		if not linhas or len(linhas[0].split("\t")) < 2:
+			print(f"[Aviso] Arquivo de download inválido: {os.path.basename(arquivo)}")
+			return False
 
-		if cod_topico not in MACRO_TOPICOS_10 or ano not in ANOS:
-			continue
+		for linha in linhas[1:]:
+			colunas = linha.split("\t")
+			if len(colunas) < 2:
+				continue
+			pais_wos = colunas[0].strip().upper()
+			try:
+				contagem = int(colunas[1].strip())
+			except ValueError:
+				continue
+			if contagem < 0:
+				print(f"[Aviso] Contagem negativa em {os.path.basename(arquivo)}")
+				return False
+			iso = mapa_pais_iso.get(pais_wos)
+			if iso:
+				chave = (ano, cod_topico, iso)
+				registros_novos[chave] += contagem
 
-		pares_processados.add((ano, cod_topico))
+	if set(registros_novos) & set(dados_anteriores):
+		raise ValueError("Há sobreposição entre dados antigos e novos. Consolidação cancelada.")
 
-		# Inicializa os 52 países/territórios com 0 para este (ano, cod_topico)
-		for iso in PAISES_52.keys():
-			agregado_52_paises[(ano, cod_topico, iso)] = 0
+	registros_finais = {**dados_anteriores, **registros_novos}
+	anos_finais = {ano for ano, _, _ in registros_finais}
+	linhas_esperadas = len(anos_finais) * len(MACRO_TOPICOS_10) * len(PAISES_52)
+	if len(registros_finais) != linhas_esperadas:
+		raise ValueError("Painel resultante incompleto. Consolidado anterior preservado.")
 
-		with open(arq, "r", encoding="utf-8", errors="replace") as f:
-			linhas = [ln.rstrip("\r\n") for ln in f if ln.strip()]
+	# Primeiro grava em arquivo auxiliar; só depois substitui o consolidado.
+	# Assim, uma coleta parcial não destrói a base histórica existente.
+	arquivo_temp = arquivo_csv_saida + ".tmp"
+	try:
+		with open(arquivo_temp, "w", encoding="utf-8", newline="") as f:
+			escritor = csv.writer(f)
+			escritor.writerow(COLUNAS_CSV)
+			for (ano, cod_topico, iso), contagem in sorted(registros_finais.items()):
+				escritor.writerow([
+					ano, iso, PAISES_52[iso][0], cod_topico,
+					MACRO_TOPICOS_10[cod_topico], contagem
+				])
+		os.replace(arquivo_temp, arquivo_csv_saida)
+	finally:
+		if os.path.exists(arquivo_temp):
+			os.remove(arquivo_temp)
 
-		if len(linhas) > 1:
-			for ln in linhas[1:]:
-				cols = ln.split("\t")
-				if len(cols) < 2:
-					continue
-				pais_wos = cols[0].strip().upper()
-				try:
-					contagem = int(cols[1].strip())
-				except ValueError:
-					continue
-
-				iso_code = mapa_pais_iso.get(pais_wos, "")
-				if iso_code:
-					ch = (ano, cod_topico, iso_code)
-					agregado_52_paises[ch] = agregado_52_paises.get(ch, 0) + contagem
-
-	os.makedirs(os.path.dirname(arquivo_csv_saida), exist_ok=True)
-
-	linhas_gravadas = 0
-	with open(arquivo_csv_saida, "w", encoding="utf-8") as f:
-		f.write("ano,iso_pais,pais_nome,id_macro_topico,macro_topico,artigos\n")
-		for (ano, cod_top, iso), cont in sorted(agregado_52_paises.items()):
-			pais_pt = PAISES_52[iso][0]
-			nome_top = MACRO_TOPICOS_10[cod_top]
-			pais_esc = f'"{pais_pt}"' if "," in pais_pt else pais_pt
-			top_esc = f'"{nome_top}"' if "," in nome_top else nome_top
-			f.write(f"{ano},{iso},{pais_esc},{cod_top},{top_esc},{cont}\n")
-			linhas_gravadas += 1
-
-	print(f"[Sucesso] Tabela salva em: {arquivo_csv_saida} ({linhas_gravadas} linhas)")
-
-	linhas_esperadas = total_esperado_arquivos * len(PAISES_52)
-	coleta_completa = (
-		len(pares_processados) == total_esperado_arquivos
-		and linhas_gravadas == linhas_esperadas
-		and os.path.exists(arquivo_csv_saida)
-		and os.path.getsize(arquivo_csv_saida) > 0
-	)
-	return coleta_completa
+	print(f"[Sucesso] Painel atualizado: {arquivo_csv_saida} ({len(registros_finais)} linhas)")
+	return True
 
 
-# =========================================================================
+# ======================================================================
 # 5. EXECUÇÃO PRINCIPAL
-# =========================================================================
+# ======================================================================
 def main():
-	# Diretório onde está este script (ex.: .../rotinas/baixar-fontes)
-	pasta_raiz = Path(__file__).resolve().parent
+	# Este script está em ict/gerar-fontes; a raiz do projeto é ict.
+	pasta_script = Path(__file__).resolve().parent
+	pasta_projeto = pasta_script.parent
 
-	# Diretório de saída final: ../../fontes
-	pasta_fontes = (pasta_raiz / ".." / "fontes").resolve()
-	os.makedirs(pasta_fontes, exist_ok=True)
-	arquivo_csv_saida = os.path.join(pasta_fontes, "wos_artigos.csv")
+	# Dados: ict/fontes/WoS_artigos (equivalente a ../fontes/WoS_artigos).
+	pasta_fontes = pasta_projeto / "fontes"
+	pasta_wos = pasta_fontes / "WoS_artigos"
+	pasta_wos.mkdir(parents=True, exist_ok=True)
+	arquivo_csv_saida = str(pasta_wos / "consolidado.csv")
 
-	# Diretório temporário de downloads subdividido em "em_andamento" e "concluidos"
-	pasta_base_temp = os.path.join(pasta_raiz, "temp_dl_wos")
+	# O CSV antigo é a fonte dos dados históricos; seus .txt não são necessários.
+	dados_anteriores, ultimo_ano = ler_consolidado(arquivo_csv_saida)
+	anos_novos = sorted({ano for ano in ANOS if ultimo_ano is None or ano > ultimo_ano})
+	if not anos_novos:
+		print(f"[Sem atualização] Consolidado já contém dados até {ultimo_ano}.")
+		print("Para incluir um novo ano, amplie ANOS na seção de parâmetros.")
+		return
+
+	if ultimo_ano is None:
+		print(f"[Coleta inicial] Anos a baixar: {anos_novos[0]} a {anos_novos[-1]}.")
+	else:
+		print(f"[Atualização] Consolidado existente até {ultimo_ano} ({len(dados_anteriores)} linhas).")
+		print(f"[Atualização] Apenas os anos novos serão baixados: {anos_novos}.")
+
+	# Downloads intermediários: WoS_artigos/desagregado/{em_andamento,concluidos}.
+	pasta_base_temp = str(pasta_wos / "desagregado")
 	pasta_em_andamento = os.path.join(pasta_base_temp, "em_andamento")
 	pasta_concluidos = os.path.join(pasta_base_temp, "concluidos")
 	os.makedirs(pasta_em_andamento, exist_ok=True)
 	os.makedirs(pasta_concluidos, exist_ok=True)
 
 	porta_debug = 9222
-	perfil_nav = os.path.join(pasta_raiz, ".perfil_navegador_wos")
+	perfil_nav = os.path.join(pasta_script, ".perfil_navegador_wos")
 	os.makedirs(perfil_nav, exist_ok=True)
 
 	navegador_bin = localizar_navegador()
@@ -603,12 +683,12 @@ def main():
 
 	print("\n" + "=" * 70)
 	print("INSTRUÇÕES PARA O USUÁRIO:")
-	print("1. Na janela do navegador que abriu, acesse a Web of Science.")
-	print("2. Aguarde a tela inicial da Web of Science (Core Collection) abrir")
-	print("	 e feche eventuais avisos de cookies ou pop-ups.")
+	print("1. Na janela do navegador, acesse a Web of Science (WoS).")
+	print("2. Aguarde a tela inicial da WoS Core Collection")
+	print("	abrir e feche eventuais avisos de cookies ou pop-ups.")
 	print("=" * 70 + "\n")
 
-	input(">>> Pressione ENTER aqui quando estiver na tela da Web of Science... ")
+	input(">>> Pressione ENTER aqui quando estiver na tela da WoS... ")
 
 	cdp, url_atual = conectar_aba_wos(porta_debug, pasta_em_andamento)
 	base_wos = url_atual.split("/wos/")[0]
@@ -617,10 +697,9 @@ def main():
 
 	filtro_doc = " AND DT=(Article)" if APENAS_ARTIGOS else ""
 
-	# Lista de 260 buscas (26 anos x 10 Macro-Tópicos TMAC)
+	# Só há consultas para anos ainda não presentes no consolidado.
 	itens_busca = []
-
-	for ano in ANOS:
+	for ano in anos_novos:
 		for cod_topico, nome_topico in sorted(MACRO_TOPICOS_10.items()):
 			query_wos = f'PY={ano} AND TMAC="{cod_topico} {nome_topico}"{filtro_doc}'
 			itens_busca.append((cod_topico, nome_topico, query_wos, ano))
@@ -638,7 +717,7 @@ def main():
 			]
 
 			if not pendentes:
-				print("\n[Concluído] Todos os 260 arquivos (26 anos x 10 Macro-Tópicos) foram baixados!")
+				print(f"\n[Concluído] Todos os {total} arquivos de anos novos foram baixados!")
 				break
 
 			if passada > 1:
@@ -682,27 +761,28 @@ def main():
 		# Remove sempre a subpasta de downloads em andamento
 		shutil.rmtree(pasta_em_andamento, ignore_errors=True)
 
-		# Consolida os dados em ../../fontes e verifica se todos os 260 arquivos foram processados
-		sucesso_total = consolidar_dados(pasta_concluidos, arquivo_csv_saida, total)
+		# Atualiza o CSV apenas quando todos os arquivos dos anos novos estiverem prontos.
+		sucesso_total = consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_anteriores)
 
 		if sucesso_total:
 			try:
 				resposta = input(
-					"\n>>> Todos os 260 arquivos foram consolidados com sucesso.\n"
-					">>> Deseja apagar a pasta 'temp_dl_wos' com os arquivos brutos (.txt)? [s/N]: "
+					f"\n>>> {total} arquivos novos foram incorporados ao consolidado.\n"
+					">>> Deseja apagar a pasta 'desagregado' com os arquivos brutos (.txt)? [s/N]: "
 				).strip().lower()
 			except EOFError:
 				resposta = "n"
 
 			if resposta in ("s", "sim", "y", "yes"):
 				shutil.rmtree(pasta_base_temp, ignore_errors=True)
-				print("[Limpeza] Pasta 'temp_dl_wos' removida com sucesso.")
+				print("[Limpeza] Pasta 'desagregado' removida com sucesso.")
 			else:
-				print("[Mantido] Os arquivos brutos (.txt) foram preservados em 'temp_dl_wos/concluidos'.")
+				print("[Mantido] Os arquivos brutos (.txt) foram preservados em 'WoS_artigos/desagregado/concluidos'.")
 		else:
 			print(
-				"[Aviso] A coleta ainda está incompleta. Os arquivos já baixados foram preservados em "
-				"'temp_dl_wos/concluidos' para que a próxima execução retome de onde parou."
+				"[Aviso] A coleta dos anos novos está incompleta. O consolidado anterior foi preservado. "
+				"Os downloads concluídos continuam em "
+				"'WoS_artigos/desagregado/concluidos' para que a próxima execução retome de onde parou."
 			)
 
 
