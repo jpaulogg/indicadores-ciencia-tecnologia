@@ -6,8 +6,8 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 6. INDICADORES SOCIOECONÔMICOS
-# .. 6.1 POPULAÇÃO
+# 6.. INDICADORES SOCIOECONÔMICOS
+# 6.1 POPULAÇÃO
 #
 # Base de dados: OCDE - Historical population data
 
@@ -47,5 +47,3 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha no download: ", e$message)
 })
-
-rm(url_api, status_download)

@@ -6,8 +6,8 @@
 #
 # Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
 # ------------------------------------------------------------
-# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
-# .. 1.2 NÚMERO DE PESQUISADORES
+# 1.. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# 1.2 NÚMERO DE PESQUISADORES
 #
 # Base de dados: UNESCO - Science and Technology OPRI
 
@@ -53,5 +53,3 @@ unzip(
 	exdir = file.path(input_dir, "UNESCO_SCN_OPRI_ocup"),
 	junkpaths = TRUE
 )
-
-rm(id_unesco, params, api_url, arquivo_zip)

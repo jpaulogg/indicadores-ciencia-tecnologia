@@ -6,8 +6,8 @@
 #
 # Obs: o objeto `input_dir` está definido em "gerar_fontes.R"
 # ------------------------------------------------------------
-# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
-# .. 1.3 EMPREGOS EM ÁREAS STEM
+# 1.. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# 1.3 EMPREGOS EM ÁREAS STEM
 #
 # Base de dados: ILOSTAT
 

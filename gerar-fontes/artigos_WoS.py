@@ -1,5 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# Rotina para automatizar o download de dados utilizados na
+# construção de indicadores de Ciência, Tecnologia e Inovação
+#
+# Autor: João Paulo Garcia
+# email: joao.garcia@fjp.mg.gov.br
+# -------------------------------------------
+# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
+# .. 2.1 ARTIGOS
+# ...... Base de dados: Web of Science
 
 """
 Automação de Coleta e Consolidação - Web of Science (2000 a 2025)
@@ -21,9 +30,9 @@ import urllib.request
 from pathlib import Path
 
 
-# ==============================================================================
+# =========================================================================
 # 1. AUTO-INSTALAÇÃO DE PACOTES E AJUSTE DO TERMINAL WINDOWS
-# ==============================================================================
+# =========================================================================
 def desativar_quickedit_windows():
 	"""Evita que um clique acidental no PowerShell congele o script."""
 	if os.name == "nt":
@@ -75,9 +84,9 @@ garantir_ambiente_e_pacotes()
 import websocket	# noqa: E402
 
 
-# ==============================================================================
+# =========================================================================
 # 2. PARÂMETROS DA PESQUISA (26 ANOS x 10 MACRO-TÓPICOS x 52 PAÍSES/TERRITÓRIOS)
-# ==============================================================================
+# =========================================================================
 
 ANOS = list(range(2000, 2026))	# 2000 a 2025 (26 anos)
 APENAS_ARTIGOS = False
@@ -155,9 +164,9 @@ PAISES_52 = {
 }
 
 
-# ==============================================================================
+# =========================================================================
 # 3. CONTROLE DO NAVEGADOR VIA CHROME DEVTOOLS PROTOCOL
-# ==============================================================================
+# =========================================================================
 def localizar_navegador():
 	candidatos = []
 	if os.name == "nt":
@@ -462,9 +471,9 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 	raise RuntimeError("Tempo esgotado aguardando o download do arquivo .txt.")
 
 
-# ==============================================================================
+# =========================================================================
 # 4. CONSOLIDAÇÃO DOS ARQUIVOS EM TABELA ÚNICA E VERIFICAÇÃO DE INTEGRIDADE
-# ==============================================================================
+# =========================================================================
 def consolidar_dados(pasta_concluidos, arquivo_csv_saida, total_esperado_arquivos):
 	"""
 	Consolida os arquivos .txt na tabela final de 52 países/territórios x 26 anos x 10 macro-tópicos.
@@ -554,9 +563,9 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, total_esperado_arquivo
 	return coleta_completa
 
 
-# ==============================================================================
+# =========================================================================
 # 5. EXECUÇÃO PRINCIPAL
-# ==============================================================================
+# =========================================================================
 def main():
 	# Diretório onde está este script (ex.: .../rotinas/baixar-fontes)
 	pasta_raiz = Path(__file__).resolve().parent

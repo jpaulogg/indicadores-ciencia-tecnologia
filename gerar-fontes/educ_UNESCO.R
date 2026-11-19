@@ -6,8 +6,8 @@
 #
 # Obs: mapa_paises, periodo e input_dir são definidos em `setup.R`.
 # -------------------------------------------
-# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
-# .. 1.1 EDUCAÇÃO SUPERIOR
+# 1... FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# 1..1 EDUCAÇÃO SUPERIOR
 #
 # Base de dados: UNESCO - Education OPRI
 
@@ -51,5 +51,3 @@ unzip(
 	exdir = file.path(input_dir, "UNESCO_SCN_OPRI_educ"),
 	junkpaths = TRUE
 )
-
-rm(id_unesco, params, api_url, arquivo_zip)

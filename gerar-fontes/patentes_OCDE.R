@@ -6,8 +6,8 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 2. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
-# .. 2.1 PATENTES
+# 2.. PRODUÇÃO CIENTÍFICA E TECNOLÓGICA
+# 2.1 PATENTES
 #
 # Base de dados: OCDE - Patents by technology
 
@@ -62,5 +62,3 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha no download: ", e$message)
 })
-
-rm(url_api, status_download)

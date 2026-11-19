@@ -6,8 +6,8 @@
 #
 # Obs.: `input_dir` e `periodo` são definidos em "setup.R".
 # -----------------------------------------------------------------
-# 5. TRANSFERÊNCIA DE TECNOLOGIA
-# .. 5.1 COMÉRCIO INTERNACIONAL DE PRODUTOS DE MÉDIA-ALTA TECNOLOGIA
+# 5.. TRANSFERÊNCIA DE TECNOLOGIA
+# 5.1 COMÉRCIO INTERNACIONAL DE PRODUTOS DE MÉDIA-ALTA TECNOLOGIA
 #
 # Base de dados: UNIDO (Manufacturing Trade Database)
 
@@ -18,9 +18,6 @@ if (!requireNamespace("jsonlite", quietly = TRUE)) {
 if (!requireNamespace("curl", quietly = TRUE)) {
 	stop("Instale o pacote curl: install.packages('curl')")
 }
-
-pasta <- file.path(input_dir, "UNIDO_comercio")
-dir.create(pasta, recursive = TRUE, showWarnings = FALSE)
 
 # 1. Metadados: identificador da base, países e anos disponíveis.
 url_meta <- "https://stat.unido.org/portal/dataset/getDataset/MTD"
@@ -33,20 +30,14 @@ meta <- jsonlite::fromJSON(
 	simplifyVector = FALSE
 )
 
-paises <- vapply(meta$countries, function(x) x$c, character(1))
-anos <- intersect(
-	as.character(periodo),
-	unlist(meta$periods, use.names = FALSE)
-)
-
 # 2. Solicitar um ZIP com os quatro indicadores, para todos os países.
 requisicao <- list(
 	datasetId = jsonlite::unbox(meta$id),
-	countryCodes = unname(unique(paises)),
+	countryCodes = character(0),
 	countryGroupsCodes = character(0),
 	variableCodes = c("X_MHT", "M_MHT", "X_T", "M_T"),
 	activityCodes = character(0),
-	periods = anos,
+	periods = periodo,
 	valueCurrency = jsonlite::unbox("NA"),
 	includeMetadata = jsonlite::unbox(TRUE),
 	selectedImportFiles = c("R")
@@ -129,13 +120,10 @@ if (!concluido) {
 }
 
 # 5. Extrair os arquivos originais, sem manipular os dados.
-unzip(arquivo_zip, exdir = pasta, junkpaths = TRUE)
+unzip(
+	arquivo_zip,
+	exdir = file.path(input_dir, "UNIDO_comercio"),
+	junkpaths = TRUE
+)
 unlink(arquivo_zip)
 message("Download concluído: ", pasta)
-
-rm(
-	pasta, url_meta, res_meta, meta, paises, anos,
-	requisicao, corpo, url_prepare, handle, res, resposta,
-	nome_zip, url_check, url_zip, arquivo_zip, concluido,
-	tentativa, res_zip, con, assinatura, id_zip
-)

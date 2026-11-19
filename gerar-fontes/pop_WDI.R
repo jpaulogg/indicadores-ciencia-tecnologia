@@ -6,9 +6,10 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 5. POPULAÇÃO
-
-# 5.2 - Banco Mundial (WDI)
+# 6.. INDICADORES SOCIOECONÔMICOS
+# 6.2 POPULAÇÃO
+#
+# Base de dados: Banco Mundial (WDI)
 
 id_bm <- c(
     "SP.POP.TOTL",       # Population, total
@@ -42,4 +43,3 @@ unzip(
 )
 
 unlink(arquivo_zip)
-rm(id_bm, api_url, arquivo_zip)

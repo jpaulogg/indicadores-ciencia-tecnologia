@@ -7,8 +7,8 @@
 # Obs: os objetos `input_dir`, `mapa_paises` e `periodo`
 # estão definidos no script "setup.R".
 # -------------------------------------------
-# 6. INDICADORES SOCIOECONÔMICOS
-# .. 6.1 PIB
+# 6.. INDICADORES SOCIOECONÔMICOS
+# 6.1 PIB
 #
 # Base de dados: Banco Mundial (WDI)
 
@@ -43,4 +43,3 @@ unzip(
 )
 
 unlink(arquivo_zip)
-rm(id_bm, api_url, arquivo_zip)

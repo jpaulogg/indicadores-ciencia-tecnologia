@@ -6,8 +6,8 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 1. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
-# .. 1.1 EDUCAÇÃO SUPERIOR
+# 1.. FORMAÇÃO E CAPACITAÇÃO PROFISSIONAL
+# 1.1 EDUCAÇÃO SUPERIOR
 #
 # Base de dados: OCDE - Student (full database)
 
@@ -58,5 +58,3 @@ status_download <- tryCatch({
 }, error = function(e) {
 	stop("Falha no download: ", e$message)
 })
-
-rm(url_api, status_download)
