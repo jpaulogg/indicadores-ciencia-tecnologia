@@ -6,19 +6,14 @@
 #
 # Obs: o objeto `input_dir` está definido no script "setup.R".
 # -------------------------------------------
-# 4. DISPÊNDIO EM ATIVIDADES DE C&T E P&D
-
-# 4.1 - UNESCO
+# 3.. FINANCIAMENTO E DISPÊNDIO EM C&T E P&D
+# 3.2 DISPÊNDIO
+#
+# Base de dados: UNESCO (UIS) - SCN, OPRI
 
 # os indicadores abaixo têm valores a preços constantes de 2017
 id_unesco <- c(
 	"EXPPPP.CONST",             # GERD IN '000 PPP$'
-	"EXPPPP.CONST.SF.BUSENTFS", # GERD - FINANCED BY BUSINESS ENTERPRISE
-	"EXPPPP.CONST.SF.FSNS",     # GERD - FINANCED BY NOT SPECIFIED SOURCE
-	"EXPPPP.CONST.SF.FUNABFS",  # GERD - FINANCED BY REST OF THE WORLD
-	"EXPPPP.CONST.SF.GOVFS",    # GERD - FINANCED BY GOVERNMENT
-	"EXPPPP.CONST.SF.HIEDUFS",  # GERD - FINANCED BY HIGHER EDUCATION
-	"EXPPPP.CONST.SF.PRNPFS",   # GERD - FINANCED BY PRIVATE NON-PROFIT
 	"EXPPPP.CONST.SP.BUSENTSP", # GERD - PERFORMED BY BUSINESS ENTERPRISE
 	"EXPPPP.CONST.SP.GOVSP",    # GERD - PERFORMED BY GOVERNMENT
 	"EXPPPP.CONST.SP.HIEDUSP",  # GERD - PERFORMED BY HIGHER EDUCATION
@@ -52,5 +47,3 @@ unzip(
 	exdir = file.path(input_dir, "UNESCO_SCN_OPRI_disp"),
 	junkpaths = TRUE
 )
-
-rm(id_unesco, params, api_url, arquivo_zip)
