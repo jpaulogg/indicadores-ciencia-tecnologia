@@ -631,6 +631,7 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_ant
 # 5. EXECUÇÃO PRINCIPAL
 # ======================================================================
 def main():
+<<<<<<< Updated upstream:gerar-fontes/artigos_WoS.py
 	# Este script está em ict/gerar-fontes; a raiz do projeto é ict.
 	pasta_script = Path(__file__).resolve().parent
 	pasta_projeto = pasta_script.parent
@@ -640,6 +641,15 @@ def main():
 	pasta_wos = pasta_fontes / "WoS_artigos"
 	pasta_wos.mkdir(parents=True, exist_ok=True)
 	arquivo_csv_saida = str(pasta_wos / "consolidado.csv")
+=======
+	# Diretório onde está este script (ex.: .../rotinas/downloads)
+	pasta_raiz = Path(__file__).resolve().parent
+
+	# Diretório de saída final: ../../fontes
+	pasta_fontes = (pasta_raiz / ".." / ".." / "fontes").resolve()
+	os.makedirs(pasta_fontes, exist_ok=True)
+	arquivo_csv_saida = os.path.join(pasta_fontes, "wos_artigos.csv")
+>>>>>>> Stashed changes:rotinas/downloads/artigos_WoS.py
 
 	# O CSV antigo é a fonte dos dados históricos; seus .txt não são necessários.
 	dados_anteriores, ultimo_ano = ler_consolidado(arquivo_csv_saida)

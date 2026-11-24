@@ -1,12 +1,17 @@
-# Objetos de uso geral das rotinas
+# Objetos de uso geral das rotinas de download e preparação dos dados.
 #
 # Autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 # -------------------------------------------
 
 # diretórios de uso geral
-dl_dir    <- file.path(getwd() , "gerar-fontes")
-input_dir <- file.path(getwd() , "fontes")
+dl_dir    <- file.path(getwd() , "downloads")
+input_dir <- file.path(dirname(getwd()) , "fontes")
+output_dir <- file.path(dirname(getwd()) , "indicadores")
+
+for (d in c(dl_dir, input_dir, output_dir)) {
+	if (!dir.exists(d)) dir.create(d, recursive = TRUE)
+}
 
 # algumas bases começam em 2013, muitas vão apenas até 2024.
 periodo <- 2000:2025

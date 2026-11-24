@@ -45,6 +45,6 @@ download.file(
 
 unzip(
 	arquivo_zip,
-	exdir = file.path(input_dir, "UNESCO_SCN_OPRI_disp"),
+	exdir = file.path(input_dir, "UNESCO_disp"),
 	junkpaths = TRUE
 )
