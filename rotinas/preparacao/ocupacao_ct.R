@@ -10,10 +10,10 @@
 # DICIONÁRIOS
 
 setores_pesq <- c(
-	"21205" = "Empresas",
-	"21209" = "Governo",
-	"21213" = "Ensino Superior",
-	"21217" = "Inst. Privadas Sem Fins Lucrativos"
+	"21205" = "Business Enterprise",
+	"21209" = "Government",
+	"21213" = "Higher Education",
+	"21217" = "Private Non-Profit"
 )
 
 rotulos_sexo <- c(
