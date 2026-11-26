@@ -114,7 +114,7 @@ pesq_masc <- merge(
 
 pesq_masc$value <- pesq_masc$value.total - pesq_masc$value.fem
 pesq_masc$indicatorId <- NA_character_
-pesq_masc$sexo <- "M"
+pesq_masc$sexo_nome <- "M"
 
 pesq_masc <- pesq_masc[, names(ct_pesq$sexo)]
 ct_pesq$sexo <- rbind(ct_pesq$sexo, pesq_masc)
@@ -137,7 +137,7 @@ ct_trabstem$sexo <- dados_oit_stem[
 	dados_oit_stem$classif1 == "STE_AGGREGATE_TOTAL",
 ]
 
-ct_trabstem$sexo$sex <- factor(
+ct_trabstem$sexo$sexo_nome <- factor(
 	unname(rotulos_sexo[ct_trabstem$sexo$sex]),
 	levels = c("F", "M")
 )

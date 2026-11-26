@@ -21,7 +21,7 @@ macro_topicos_wos <- c(
 	"Arts & Humanities"
 )
 
-campos_wipo <- c(
+campos_nome <- c(
 	"WIPO_01" = "Electrical machinery, apparatus, energy",
 	"WIPO_02" = "Audio-visual technology",
 	"WIPO_03" = "Telecommunications",
@@ -78,11 +78,14 @@ colunas_wos <- c(
 	"pais"            = "character",
 	"id_macro_topico" = "integer",
 	"macro_topico"    = "character",
-	"artigos"         = "numeric"
+	"valor"           = "numeric"
 )
 
 dados_wos <- read.csv(arquivo_wos, colClasses = colunas_wos)
-dados_wos <- dados_wos[, names(colunas_wos)]
+dados_wos <- dados_wos[
+	dados_wos$cod_pais %in% mapa_paises$ISO2,
+	names(colunas_wos)
+]
 
 # 2. OCDE - Patents by technology
 arquivo_ocde <- file.path(input_dir, "OCDE_patentes_por_campo.csv")
@@ -127,7 +130,7 @@ ct_artigos$area$macro_topico <- factor(
 )
 
 ct_artigos$total <- aggregate(
-	artigos ~ ano + cod_pais + pais,
+	valor ~ ano + cod_pais + pais,
 	data = dados_wos,
 	FUN = sum
 )
@@ -149,11 +152,11 @@ ct_patuspto$total <- dados_uspto[
 ]
 
 ct_patuspto$campo <- dados_uspto[
-	dados_uspto$WIPO %in% names(campos_wipo),
+	dados_uspto$WIPO %in% names(campos_nome),
 ]
 ct_patuspto$campo$campo_nome <- factor(
-	unname(campos_wipo[ct_patuspto$campo$WIPO]),
-	levels = unname(campos_wipo)
+	unname(campos_nome[ct_patuspto$campo$WIPO]),
+	levels = unname(campos_nome)
 )
 
 # 2.2 Patentes via PCT / WIPO
@@ -171,11 +174,11 @@ ct_patpct$total <- dados_pct[
 ]
 
 ct_patpct$campo <- dados_pct[
-	dados_pct$WIPO %in% names(campos_wipo),
+	dados_pct$WIPO %in% names(campos_nome),
 ]
 ct_patpct$campo$campo_nome <- factor(
-	unname(campos_wipo[ct_patpct$campo$WIPO]),
-	levels = unname(campos_wipo)
+	unname(campos_nome[ct_patpct$campo$WIPO]),
+	levels = unname(campos_nome)
 )
 
 # 2.3 Famílias Triádicas de Patentes
@@ -193,9 +196,9 @@ ct_patfam$total <- dados_fam[
 ]
 
 ct_patfam$campo <- dados_fam[
-	dados_fam$WIPO %in% names(campos_wipo),
+	dados_fam$WIPO %in% names(campos_nome),
 ]
 ct_patfam$campo$campo_nome <- factor(
-	unname(campos_wipo[ct_patfam$campo$WIPO]),
-	levels = unname(campos_wipo)
+	unname(campos_nome[ct_patfam$campo$WIPO]),
+	levels = unname(campos_nome)
 )

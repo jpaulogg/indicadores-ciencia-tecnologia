@@ -42,10 +42,3 @@ source("disp_UNESCO.R", local = new.env())
 
 # 5.. TRANSFERÊNCIA TECNOLÓGICA
 source("comercio_UNIDO.R", local = new.env())
-
-# 6.. INDICADORES SOCIOECONÔMICOS
-# 6.1 PIB
-source("PIB_WDI.R", local = new.env())
-
-# 6.2 POPULAÇÃO
-source("pop_WDI.R", local = new.env())

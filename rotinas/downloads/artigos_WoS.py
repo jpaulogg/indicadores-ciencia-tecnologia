@@ -15,11 +15,11 @@
 """
 Coleta e atualização incremental - Web of Science. Estratégia: consultar
 apenas os anos posteriores ao último ano consolidado. Sem consolidado
-prévio: coletar os anos definidos em ANOS. Saída:
-ict/fontes/WoS_artigos/consolidado.csv. Downloads intermediários:
-ict/fontes/WoS_artigos/desagregado/. Reino Unido desagregado
-(Inglaterra, Escócia, País de Gales e Irlanda do Norte). Os arquivos
-brutos podem ser removidos após uma consolidação completa.
+prévio (ou quando houver alteração na grade de países/tópicos): coletar/reconsolidar
+os anos definidos em ANOS. Saída: ict/fontes/WoS_artigos/consolidado.csv.
+Downloads intermediários: ict/fontes/WoS_artigos/desagregado/. Reino Unido
+desagregado (Inglaterra, Escócia, País de Gales e Irlanda do Norte). Os
+arquivos brutos podem ser removidos após uma consolidação completa.
 """
 
 import os
@@ -76,7 +76,7 @@ def garantir_ambiente_e_pacotes():
 	print("Instalando pacote 'websocket-client' no ambiente local...")
 	subprocess.check_call([
 		str(python_venv), "-m", "pip", "install", "--quiet", "--upgrade",
-			"websocket-client"
+		"websocket-client"
 	])
 
 	print("Reiniciando o script dentro do ambiente configurado...\n")
@@ -90,7 +90,7 @@ import websocket	# noqa: E402
 
 
 # ======================================================================
-# 2. PARÂMETROS DA PESQUISA (10 MACRO-TÓPICOS x 52 PAÍSES/TERRITÓRIOS)
+# 2. PARÂMETROS DA PESQUISA (10 MACRO-TÓPICOS x 53 PAÍSES/TERRITÓRIOS)
 # ======================================================================
 
 ANOS = list(range(2000, 2026))	# Em 2027, use range(2000, 2027) para incluir 2026.
@@ -111,9 +111,9 @@ MACRO_TOPICOS_10 = {
 	10: "Arts & Humanities",
 }
 
-# Dicionário dos 52 Países/Territórios (48 países + 4 nações do Reino Unido desagregadas):
+# Dicionário dos 53 Países/Territórios (48 países + Reino Unido agregado + 4 nações desagregadas):
 # Código ISO -> (Nome em Português, Lista de nomes equivalentes na Web of Science)
-PAISES_52 = {
+PAISES_53 = {
 	"US": ("Estados Unidos", ["USA"]),
 	"IL": ("Israel", ["ISRAEL"]),
 	"JP": ("Japão", ["JAPAN"]),
@@ -126,6 +126,7 @@ PAISES_52 = {
 	"DE": ("Alemanha", ["GERMANY"]),
 	"DK": ("Dinamarca", ["DENMARK"]),
 	"FI": ("Finlândia", ["FINLAND"]),
+	"GB": ("Reino Unido", []),
 	"GB-ENG": ("Inglaterra", ["ENGLAND"]),
 	"GB-SCT": ("Escócia", ["SCOTLAND"]),
 	"GB-WLS": ("País de Gales", ["WALES"]),
@@ -278,11 +279,11 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 
 		// Clica no link/botão de busca no menu lateral ou breadcrumb para voltar sem reload
 		const btnMenuSearch = Array.from(document.querySelectorAll("a, button")).find(
-		el => visivel(el) && (/^(Search|Pesquisar|Advanced Search|Pesquisa avan[çc]ada)$/i.test(el.textContent.trim()) || (el.getAttribute("href") || "").includes("advanced-search"))
+			el => visivel(el) && (/^(Search|Pesquisar|Advanced Search|Pesquisa avan[çc]ada)$/i.test(el.textContent.trim()) || (el.getAttribute("href") || "").includes("advanced-search"))
 		);
 		if (btnMenuSearch) {
-		btnMenuSearch.click();
-		await esperar(1200);
+			btnMenuSearch.click();
+			await esperar(1200);
 		}
 		return visivel(document.querySelector("#advancedSearchInputArea"));
 	})()
@@ -299,9 +300,9 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		const regexCat = /Countries\\/Regions|Pa[íi]ses\\/Regi[õo]es|Pa[íi]ses\\/Territ[óo]rios/i;
 		const queryStr = {json.dumps(query_wos)};
 		const visivel = (el) => {{
-		if (!el) return false;
-		const rect = el.getBoundingClientRect();
-		return rect.width > 0 && rect.height > 0;
+			if (!el) return false;
+			const rect = el.getBoundingClientRect();
+			return rect.width > 0 && rect.height > 0;
 		}};
 		const foraDoMenu = (el) => !el.closest("header, app-header, nav, aside, footer, [role='navigation']");
 
@@ -309,29 +310,29 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		let caixa = null;
 		const t0 = Date.now();
 		while (Date.now() - t0 < 25000) {{
-		caixa = document.querySelector("#advancedSearchInputArea");
-		if (visivel(caixa)) break;
+			caixa = document.querySelector("#advancedSearchInputArea");
+			if (visivel(caixa)) break;
 
-		const linksAdv = Array.from(document.querySelectorAll(
-			"a[href*='advanced-search'], a[data-ta*='advanced'], button[data-ta*='advanced'], a, button"
-		)).filter(el => visivel(el) && foraDoMenu(el));
+			const linksAdv = Array.from(document.querySelectorAll(
+				"a[href*='advanced-search'], a[data-ta*='advanced'], button[data-ta*='advanced'], a, button"
+			)).filter(el => visivel(el) && foraDoMenu(el));
 
-		const btnAdv = linksAdv.find(el => {{
-			const txt = el.textContent.trim();
-			const href = (el.getAttribute("href") || "").toLowerCase();
-			return /^(Advanced Search|Pesquisa avan[çc]ada)$/i.test(txt) || href.includes("advanced-search");
-		}});
+			const btnAdv = linksAdv.find(el => {{
+				const txt = el.textContent.trim();
+				const href = (el.getAttribute("href") || "").toLowerCase();
+				return /^(Advanced Search|Pesquisa avan[çc]ada)$/i.test(txt) || href.includes("advanced-search");
+			}});
 
-		if (btnAdv) {{
-			btnAdv.click();
-			await esperar(1500);
-		}} else {{
-			await esperar(400);
-		}}
+			if (btnAdv) {{
+				btnAdv.click();
+				await esperar(1500);
+			}} else {{
+				await esperar(400);
+			}}
 		}}
 
 		if (!visivel(caixa)) {{
-		throw new Error("Caixa #advancedSearchInputArea não encontrada.");
+			throw new Error("Caixa #advancedSearchInputArea não encontrada.");
 		}}
 
 		// Limpa e preenche a query
@@ -348,15 +349,15 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		// 2. Clica no botão Search EXCLUSIVO da Busca Avançada
 		let btnSearch = document.querySelector('button[data-ta="run-search-button"]');
 		if (!visivel(btnSearch)) {{
-		const candidatosSearch = Array.from(
-			document.querySelectorAll(".search-button-container button, app-advanced-search button, main button, form button")
-		).filter(b => visivel(b) && foraDoMenu(b));
+			const candidatosSearch = Array.from(
+				document.querySelectorAll(".search-button-container button, app-advanced-search button, main button, form button")
+			).filter(b => visivel(b) && foraDoMenu(b));
 
-		btnSearch = candidatosSearch.find(b => /^(Search|Pesquisar)$/i.test(b.textContent.trim()));
+			btnSearch = candidatosSearch.find(b => /^(Search|Pesquisar)$/i.test(b.textContent.trim()));
 		}}
 
 		if (!visivel(btnSearch)) {{
-		throw new Error("Botão Search da Busca Avançada não encontrado.");
+			throw new Error("Botão Search da Busca Avançada não encontrado.");
 		}}
 		btnSearch.click();
 
@@ -364,14 +365,14 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		let btnAnalyze = null;
 		const t1 = Date.now();
 		while (Date.now() - t1 < 35000) {{
-		const textoPag = document.body.innerText || "";
-		if (/No records match your query|Nenhum registro corresponde|Your search found no records/i.test(textoPag)) {{
-			return "SEM_REGISTROS";
-		}}
-		const candidatos = Array.from(document.querySelectorAll("a, button")).filter(el => visivel(el) && foraDoMenu(el));
-		btnAnalyze = candidatos.find(el => /Analyze results|Analisar resultados/i.test(el.textContent));
-		if (btnAnalyze) break;
-		await esperar(500);
+			const textoPag = document.body.innerText || "";
+			if (/No records match your query|Nenhum registro corresponde|Your search found no records/i.test(textoPag)) {{
+				return "SEM_REGISTROS";
+			}}
+			const candidatos = Array.from(document.querySelectorAll("a, button")).filter(el => visivel(el) && foraDoMenu(el));
+			btnAnalyze = candidatos.find(el => /Analyze results|Analisar resultados/i.test(el.textContent));
+			if (btnAnalyze) break;
+			await esperar(500);
 		}}
 		if (!btnAnalyze) throw new Error("Botão 'Analyze results' não apareceu.");
 		await esperar(800);
@@ -381,19 +382,19 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		let btnDownload = null;
 		const t2 = Date.now();
 		while (Date.now() - t2 < 35000) {{
-		if (/analyze-results/i.test(window.location.href)) {{
-			const btns = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
-			btnDownload = btns.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
-			if (btnDownload) break;
-		}}
-		await esperar(500);
+			if (/analyze-results/i.test(window.location.href)) {{
+				const btns = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
+				btnDownload = btns.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
+				if (btnDownload) break;
+			}}
+			await esperar(500);
 		}}
 		if (!btnDownload) throw new Error("Tela Analyze Results não carregou a tempo.");
 		await esperar(1200);
 
 		// 5. Seleciona "Countries/Regions" (Países/Regiões) no menu da página Analyze Results
 		const seletores = Array.from(document.querySelectorAll(
-		"app-analyze-results wos-select button, app-analyze-results mat-select, main wos-select button, main mat-select, wos-select button, mat-select, [aria-haspopup='listbox']"
+			"app-analyze-results wos-select button, app-analyze-results mat-select, main wos-select button, main mat-select, wos-select button, mat-select, [aria-haspopup='listbox']"
 		)).filter(el => visivel(el) && foraDoMenu(el));
 
 		let dropdownCat = seletores.find(el => /Web of Science Categories|Categorias da Web of Science|Citation Topics|T[óo]picos de cita[çc][ãa]o|Countries|Pa[íi]ses|Research Areas|Áreas de pesquisa/i.test(el.textContent)) || seletores[0];
@@ -401,53 +402,53 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 		if (!dropdownCat) throw new Error("Seletor de categoria da página Analyze Results não encontrado.");
 
 		if (!regexCat.test(dropdownCat.textContent.trim())) {{
-		dropdownCat.scrollIntoView({{ block: "center" }});
-		await esperar(300);
-		dropdownCat.click();
-		await esperar(800);
+			dropdownCat.scrollIntoView({{ block: "center" }});
+			await esperar(300);
+			dropdownCat.click();
+			await esperar(800);
 
-		let opcaoCat = null;
-		const t3 = Date.now();
-		while (Date.now() - t3 < 15000) {{
-			const candidatosOpcao = Array.from(document.querySelectorAll(
-			'[role="option"], mat-option, .mat-option-text, .options-list li, .wos-select-options button, .wos-select-options li, wos-select li, wos-select button, .cdk-overlay-container [role="option"], .cdk-overlay-container button, .cdk-overlay-container li, .cdk-overlay-container span'
-			)).filter(el => visivel(el) && el !== dropdownCat);
+			let opcaoCat = null;
+			const t3 = Date.now();
+			while (Date.now() - t3 < 15000) {{
+				const candidatosOpcao = Array.from(document.querySelectorAll(
+					'[role="option"], mat-option, .mat-option-text, .options-list li, .wos-select-options button, .wos-select-options li, wos-select li, wos-select button, .cdk-overlay-container [role="option"], .cdk-overlay-container button, .cdk-overlay-container li, .cdk-overlay-container span'
+				)).filter(el => visivel(el) && el !== dropdownCat);
 
-			opcaoCat = candidatosOpcao.find(el => {{
-			const txt = el.textContent.trim();
-			return txt.length < 60 && regexCat.test(txt);
-			}});
+				opcaoCat = candidatosOpcao.find(el => {{
+					const txt = el.textContent.trim();
+					return txt.length < 60 && regexCat.test(txt);
+				}});
 
-			if (opcaoCat) break;
-			await esperar(400);
-		}}
+				if (opcaoCat) break;
+				await esperar(400);
+			}}
 
-		if (!opcaoCat) {{
-			throw new Error("Opção 'Countries/Regions' não encontrada no menu aberto.");
-		}}
+			if (!opcaoCat) {{
+				throw new Error("Opção 'Countries/Regions' não encontrada no menu aberto.");
+			}}
 
-		opcaoCat.scrollIntoView({{ block: "nearest" }});
-		opcaoCat.click();
-		await esperar(2500);
+			opcaoCat.scrollIntoView({{ block: "nearest" }});
+			opcaoCat.click();
+			await esperar(2500);
 		}}
 
 		// 6. Marca "All data rows (up to 100,000)" para baixar todos os países
 		const radios = Array.from(document.querySelectorAll("mat-radio-button, label, input[type='radio']"));
 		const radioAll = radios.find(el => visivel(el) && /All data rows|Todas as linhas/i.test(el.textContent || (el.parentElement && el.parentElement.textContent) || ""));
 		if (radioAll) {{
-		const inputInterno = radioAll.querySelector("input[type='radio']") || radioAll;
-		inputInterno.click();
-		await esperar(500);
+			const inputInterno = radioAll.querySelector("input[type='radio']") || radioAll;
+			inputInterno.click();
+			await esperar(500);
 		}}
 
 		// 7. Aguarda o botão "Download data table" ficar pronto (até 20s) e clica nele
 		let btnDownloadFinal = null;
 		const t4 = Date.now();
 		while (Date.now() - t4 < 20000) {{
-		const btnsDl = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
-		btnDownloadFinal = btnsDl.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
-		if (btnDownloadFinal) break;
-		await esperar(500);
+			const btnsDl = Array.from(document.querySelectorAll("button")).filter(el => visivel(el) && foraDoMenu(el));
+			btnDownloadFinal = btnsDl.find(el => /Download data table|Baixar tabela/i.test(el.textContent));
+			if (btnDownloadFinal) break;
+			await esperar(500);
 		}}
 		if (!btnDownloadFinal) throw new Error("Botão 'Download data table' não encontrado após selecionar Countries/Regions.");
 		btnDownloadFinal.scrollIntoView({{ block: "center" }});
@@ -480,8 +481,7 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 # 4. LEITURA DO CONSOLIDADO E ATUALIZAÇÃO INCREMENTAL
 # ======================================================================
 COLUNAS_CSV = [
-	"ano", "cod_pais", "pais", "id_macro_topico",
-	"nome_especificacao", "valor"
+	"ano", "cod_pais", "pais", "id_macro_topico", "macro_topico", "valor"
 ]
 
 
@@ -489,7 +489,8 @@ def ler_consolidado(arquivo_csv_saida):
 	"""
 	Lê um consolidado existente e valida sua integridade.
 	Retorna um dicionário {(ano, cod_topico, iso): artigos} e o último ano.
-	Se não houver consolidado, retorna ({}, None).
+	Se não houver consolidado, ou se a grade de países/tópicos tiver sido
+	ampliada (ex.: inclusão de GB), retorna ({}, None) para reconsolidar.
 	"""
 	if not os.path.exists(arquivo_csv_saida):
 		return {}, None
@@ -507,14 +508,14 @@ def ler_consolidado(arquivo_csv_saida):
 			try:
 				ano = int(linha["ano"])
 				cod_topico = int(linha["id_macro_topico"])
-				iso = linha["ISO2"]
+				iso = linha["cod_pais"]
 				contagem = int(linha["valor"])
 			except (ValueError, TypeError, KeyError) as erro:
 				raise ValueError(f"Consolidado inválido na linha {num_linha}: {erro}") from erro
 
-			if cod_topico not in MACRO_TOPICOS_10 or iso not in PAISES_52 or contagem < 0:
+			if cod_topico not in MACRO_TOPICOS_10 or iso not in PAISES_53 or contagem < 0:
 				raise ValueError(f"Consolidado com código ou contagem inválida na linha {num_linha}.")
-			if linha["pais"] != PAISES_52[iso][0] or linha["nome_especificacao"] != MACRO_TOPICOS_10[cod_topico]:
+			if linha["pais"] != PAISES_53[iso][0] or linha["macro_topico"] != MACRO_TOPICOS_10[cod_topico]:
 				raise ValueError(f"Consolidado com nome divergente na linha {num_linha}.")
 
 			chave = (ano, cod_topico, iso)
@@ -530,28 +531,30 @@ def ler_consolidado(arquivo_csv_saida):
 	if set(anos_presentes) != anos_esperados:
 		raise ValueError("O consolidado existente possui lacunas entre os anos já registrados.")
 
-	# Um ano só é considerado consolidado se tiver 10 tópicos x 52 países.
+	# Um ano só é considerado consolidado se tiver 10 tópicos x 53 países.
 	chaves_esperadas = {
 		(ano, cod_topico, iso)
 		for ano in anos_presentes
 		for cod_topico in MACRO_TOPICOS_10
-		for iso in PAISES_52
+		for iso in PAISES_53
 	}
 	if set(registros) != chaves_esperadas:
 		faltam = len(chaves_esperadas - set(registros))
-		raise ValueError(
-			f"O consolidado existente está incompleto ({faltam} combinações ausentes). "
-			"O arquivo foi preservado; corrija-o antes de atualizar."
+		print(
+			f"[Aviso] O consolidado existente não contém todas as combinações atuais "
+			f"({faltam} ausentes, ex.: novo país adicionado). Será feita a reconsolidação "
+			"a partir dos arquivos desagregados."
 		)
+		return {}, None
 
 	return registros, anos_presentes[-1]
 
 
 def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_anteriores):
 	"""
-	Consolida somente os downloads de anos novos, acrescentando os registros
-	históricos já presentes no CSV. Só substitui o arquivo se a coleta nova estiver
-	completa. Não precisa dos arquivos .txt históricos.
+	Consolida os downloads de anos novos (ou todos os anos, em caso de reconsolidação),
+	acrescentando os registros históricos já presentes no CSV. Só substitui o arquivo
+	se a coleta estiver completa.
 	"""
 	pares_esperados = {(ano, cod_topico) for cod_topico, _, _, ano in itens_busca}
 	arquivos_novos = []
@@ -562,17 +565,17 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_ant
 			return False
 		arquivos_novos.append((ano, cod_topico, arquivo))
 
-	print(f"\n[Consolidação] Processando {len(arquivos_novos)} downloads de anos novos...")
+	print(f"\n[Consolidação] Processando {len(arquivos_novos)} arquivos desagregados...")
 
 	mapa_pais_iso = {}
-	for iso, (_, nomes_wos) in PAISES_52.items():
+	for iso, (_, nomes_wos) in PAISES_53.items():
 		for nome in nomes_wos:
 			mapa_pais_iso[nome.upper()] = iso
 
 	registros_novos = {}
 	for ano, cod_topico, arquivo in arquivos_novos:
 		# Todas as combinações do ano/tópico recebem zero, mesmo sem registros WoS.
-		for iso in PAISES_52:
+		for iso in PAISES_53:
 			registros_novos[(ano, cod_topico, iso)] = 0
 
 		with open(arquivo, "r", encoding="utf-8-sig", errors="replace") as f:
@@ -598,12 +601,17 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_ant
 				chave = (ano, cod_topico, iso)
 				registros_novos[chave] += contagem
 
+		registros_novos[(ano, cod_topico, "GB")] = sum(
+			registros_novos[(ano, cod_topico, sub)]
+			for sub in ("GB-ENG", "GB-SCT", "GB-WLS", "GB-NIR")
+		)
+
 	if set(registros_novos) & set(dados_anteriores):
 		raise ValueError("Há sobreposição entre dados antigos e novos. Consolidação cancelada.")
 
 	registros_finais = {**dados_anteriores, **registros_novos}
 	anos_finais = {ano for ano, _, _ in registros_finais}
-	linhas_esperadas = len(anos_finais) * len(MACRO_TOPICOS_10) * len(PAISES_52)
+	linhas_esperadas = len(anos_finais) * len(MACRO_TOPICOS_10) * len(PAISES_53)
 	if len(registros_finais) != linhas_esperadas:
 		raise ValueError("Painel resultante incompleto. Consolidado anterior preservado.")
 
@@ -616,7 +624,7 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_ant
 			escritor.writerow(COLUNAS_CSV)
 			for (ano, cod_topico, iso), contagem in sorted(registros_finais.items()):
 				escritor.writerow([
-					ano, iso, PAISES_52[iso][0], cod_topico,
+					ano, iso, PAISES_53[iso][0], cod_topico,
 					MACRO_TOPICOS_10[cod_topico], contagem
 				])
 		os.replace(arquivo_temp, arquivo_csv_saida)
@@ -632,27 +640,17 @@ def consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_ant
 # 5. EXECUÇÃO PRINCIPAL
 # ======================================================================
 def main():
-<<<<<<< Updated upstream:gerar-fontes/artigos_WoS.py
-	# Este script está em ict/gerar-fontes; a raiz do projeto é ict.
-	pasta_script = Path(__file__).resolve().parent
-	pasta_projeto = pasta_script.parent
-
-	# Dados: ict/fontes/WoS_artigos (equivalente a ../fontes/WoS_artigos).
-	pasta_fontes = pasta_projeto / "fontes"
-	pasta_wos = pasta_fontes / "WoS_artigos"
-	pasta_wos.mkdir(parents=True, exist_ok=True)
-	arquivo_csv_saida = str(pasta_wos / "consolidado.csv")
-=======
 	# Diretório onde está este script (ex.: .../rotinas/downloads)
 	pasta_raiz = Path(__file__).resolve().parent
 
-	# Diretório de saída final: ../../fontes
+	# Diretório de saída final: ../../fontes/WoS_artigos
 	pasta_fontes = (pasta_raiz / ".." / ".." / "fontes").resolve()
-	os.makedirs(pasta_fontes, exist_ok=True)
-	arquivo_csv_saida = os.path.join(pasta_fontes, "wos_artigos.csv")
->>>>>>> Stashed changes:rotinas/downloads/artigos_WoS.py
+	pasta_wos = pasta_fontes / "WoS_artigos"
+	os.makedirs(pasta_wos, exist_ok=True)
+	arquivo_csv_saida = os.path.join(pasta_wos, "consolidado.csv")
 
-	# O CSV antigo é a fonte dos dados históricos; seus .txt não são necessários.
+	# O CSV antigo é a fonte dos dados históricos; seus .txt não são necessários,
+	# exceto quando houver alteração na grade de países/tópicos.
 	dados_anteriores, ultimo_ano = ler_consolidado(arquivo_csv_saida)
 	anos_novos = sorted({ano for ano in ANOS if ultimo_ano is None or ano > ultimo_ano})
 	if not anos_novos:
@@ -661,7 +659,7 @@ def main():
 		return
 
 	if ultimo_ano is None:
-		print(f"[Coleta inicial] Anos a baixar: {anos_novos[0]} a {anos_novos[-1]}.")
+		print(f"[Coleta/Reconsolidação] Anos a processar: {anos_novos[0]} a {anos_novos[-1]}.")
 	else:
 		print(f"[Atualização] Consolidado existente até {ultimo_ano} ({len(dados_anteriores)} linhas).")
 		print(f"[Atualização] Apenas os anos novos serão baixados: {anos_novos}.")
@@ -673,42 +671,9 @@ def main():
 	os.makedirs(pasta_em_andamento, exist_ok=True)
 	os.makedirs(pasta_concluidos, exist_ok=True)
 
-	porta_debug = 9222
-	perfil_nav = os.path.join(pasta_script, ".perfil_navegador_wos")
-	os.makedirs(perfil_nav, exist_ok=True)
-
-	navegador_bin = localizar_navegador()
-	print(f"[Navegador] Abrindo: {navegador_bin}")
-	print(f"[Destino Final] {arquivo_csv_saida}")
-
-	proc_nav = subprocess.Popen([
-		navegador_bin,
-		f"--remote-debugging-port={porta_debug}",
-		"--remote-allow-origins=*",
-		f"--user-data-dir={perfil_nav}",
-		"--disable-blink-features=AutomationControlled",
-		"--no-first-run",
-		"--no-default-browser-check",
-		"https://www.periodicos.capes.gov.br/",
-	], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-
-	print("\n" + "=" * 70)
-	print("INSTRUÇÕES PARA O USUÁRIO:")
-	print("1. Na janela do navegador, acesse a Web of Science (WoS).")
-	print("2. Aguarde a tela inicial da WoS Core Collection")
-	print("	abrir e feche eventuais avisos de cookies ou pop-ups.")
-	print("=" * 70 + "\n")
-
-	input(">>> Pressione ENTER aqui quando estiver na tela da WoS... ")
-
-	cdp, url_atual = conectar_aba_wos(porta_debug, pasta_em_andamento)
-	base_wos = url_atual.split("/wos/")[0]
-	url_avancada = f"{base_wos}/wos/woscc/advanced-search"
-	print(f"[Conectado] Proxy/Domínio detectado: {base_wos}")
-
 	filtro_doc = " AND DT=(Article)" if APENAS_ARTIGOS else ""
 
-	# Só há consultas para anos ainda não presentes no consolidado.
+	# Consultas para os anos que precisam ser baixados/reconsolidados.
 	itens_busca = []
 	for ano in anos_novos:
 		for cod_topico, nome_topico in sorted(MACRO_TOPICOS_10.items()):
@@ -716,69 +681,117 @@ def main():
 			itens_busca.append((cod_topico, nome_topico, query_wos, ano))
 
 	total = len(itens_busca)
+	pendentes_iniciais = [
+		item for item in itens_busca
+		if not (
+			os.path.exists(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt"))
+			and os.path.getsize(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt")) > 0
+		)
+	]
+
+	cdp = None
+	proc_nav = None
 
 	try:
-		for passada in range(1, MAX_PASSADAS + 1):
-			pendentes = [
-				item for item in itens_busca
-				if not (
-					os.path.exists(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt"))
-					and os.path.getsize(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt")) > 0
-				)
-			]
+		if not pendentes_iniciais:
+			print(f"[Reconsolidação] Todos os {total} arquivos desagregados já estão disponíveis localmente. Pulando download.")
+		else:
+			porta_debug = 9222
+			perfil_nav = os.path.join(pasta_raiz, ".perfil_navegador_wos")
+			os.makedirs(perfil_nav, exist_ok=True)
 
-			if not pendentes:
-				print(f"\n[Concluído] Todos os {total} arquivos de anos novos foram baixados!")
-				break
+			navegador_bin = localizar_navegador()
+			print(f"[Navegador] Abrindo: {navegador_bin}")
+			print(f"[Destino Final] {arquivo_csv_saida}")
 
-			if passada > 1:
-				print(f"\n=== INICIANDO REPESCAGEM AUTOMÁTICA (Passada {passada}/{MAX_PASSADAS}) ===")
-				print(f"Restam {len(pendentes)} arquivos pendentes. Aguardando 15s antes de retomar...")
-				time.sleep(15.0)
+			proc_nav = subprocess.Popen([
+				navegador_bin,
+				f"--remote-debugging-port={porta_debug}",
+				"--remote-allow-origins=*",
+				f"--user-data-dir={perfil_nav}",
+				"--disable-blink-features=AutomationControlled",
+				"--no-first-run",
+				"--no-default-browser-check",
+				"https://www.periodicos.capes.gov.br/",
+			], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-			for idx, (cod_topico, nome_topico, query_wos, ano) in enumerate(itens_busca, 1):
-				arq_destino = os.path.join(pasta_concluidos, f"wos_{ano}_topico_{cod_topico:02d}.txt")
-				if os.path.exists(arq_destino) and os.path.getsize(arq_destino) > 0:
-					if passada == 1:
-						print(f"[{idx}/{total}] Já salvo: wos_{ano}_topico_{cod_topico:02d}.txt (pulando)")
-					continue
+			print("\n" + "=" * 70)
+			print("INSTRUÇÕES PARA O USUÁRIO:")
+			print("1. Na janela do navegador, acesse a Web of Science (WoS).")
+			print("2. Aguarde a tela inicial da WoS Core Collection")
+			print("   abrir e feche eventuais avisos de cookies ou pop-ups.")
+			print("=" * 70 + "\n")
 
-				print(f"[{idx}/{total}] Baixando: Ano {ano} | TMAC {cod_topico} ({nome_topico}) ... ", end="", flush=True)
-				try:
-					resultado = executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento)
-					if resultado == "SEM_REGISTROS":
-						with open(arq_destino, "w", encoding="utf-8") as f:
-							f.write("Countries/Regions\tRecord Count\t%\n")
-						print("0 registros (vazio registrado).")
-					else:
-						shutil.move(resultado, arq_destino)
-						print("OK!")
+			input(">>> Pressione ENTER aqui quando estiver na tela da WoS... ")
 
-					time.sleep(random.uniform(3.5, 6.5))
+			cdp, url_atual = conectar_aba_wos(porta_debug, pasta_em_andamento)
+			base_wos = url_atual.split("/wos/")[0]
+			url_avancada = f"{base_wos}/wos/woscc/advanced-search"
+			print(f"[Conectado] Proxy/Domínio detectado: {base_wos}")
 
-				except Exception as e:
-					print(f"ERRO: {e}")
+			for passada in range(1, MAX_PASSADAS + 1):
+				pendentes = [
+					item for item in itens_busca
+					if not (
+						os.path.exists(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt"))
+						and os.path.getsize(os.path.join(pasta_concluidos, f"wos_{item[3]}_topico_{item[0]:02d}.txt")) > 0
+					)
+				]
+
+				if not pendentes:
+					print(f"\n[Concluído] Todos os {total} arquivos foram baixados!")
+					break
+
+				if passada > 1:
+					print(f"\n=== INICIANDO REPESCAGEM AUTOMÁTICA (Passada {passada}/{MAX_PASSADAS}) ===")
+					print(f"Restam {len(pendentes)} arquivos pendentes. Aguardando 15s antes de retomar...")
+					time.sleep(15.0)
+
+				for idx, (cod_topico, nome_topico, query_wos, ano) in enumerate(itens_busca, 1):
+					arq_destino = os.path.join(pasta_concluidos, f"wos_{ano}_topico_{cod_topico:02d}.txt")
+					if os.path.exists(arq_destino) and os.path.getsize(arq_destino) > 0:
+						if passada == 1:
+							print(f"[{idx}/{total}] Já salvo: wos_{ano}_topico_{cod_topico:02d}.txt (pulando)")
+						continue
+
+					print(f"[{idx}/{total}] Baixando: Ano {ano} | TMAC {cod_topico} ({nome_topico}) ... ", end="", flush=True)
 					try:
-						cdp.fechar()
-						cdp, _ = conectar_aba_wos(porta_debug, pasta_em_andamento)
-					except Exception:
-						pass
-					time.sleep(random.uniform(8.0, 12.0))
+						resultado = executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento)
+						if resultado == "SEM_REGISTROS":
+							with open(arq_destino, "w", encoding="utf-8") as f:
+								f.write("Countries/Regions\tRecord Count\t%\n")
+							print("0 registros (vazio registrado).")
+						else:
+							shutil.move(resultado, arq_destino)
+							print("OK!")
+
+						time.sleep(random.uniform(3.5, 6.5))
+
+					except Exception as e:
+						print(f"ERRO: {e}")
+						try:
+							cdp.fechar()
+							cdp, _ = conectar_aba_wos(porta_debug, pasta_em_andamento)
+						except Exception:
+							pass
+						time.sleep(random.uniform(8.0, 12.0))
 
 	finally:
-		cdp.fechar()
-		proc_nav.terminate()
+		if cdp is not None:
+			cdp.fechar()
+		if proc_nav is not None:
+			proc_nav.terminate()
 
 		# Remove sempre a subpasta de downloads em andamento
 		shutil.rmtree(pasta_em_andamento, ignore_errors=True)
 
-		# Atualiza o CSV apenas quando todos os arquivos dos anos novos estiverem prontos.
+		# Atualiza o CSV apenas quando todos os arquivos necessários estiverem prontos.
 		sucesso_total = consolidar_dados(pasta_concluidos, arquivo_csv_saida, itens_busca, dados_anteriores)
 
 		if sucesso_total:
 			try:
 				resposta = input(
-					f"\n>>> {total} arquivos novos foram incorporados ao consolidado.\n"
+					f"\n>>> {total} arquivos foram incorporados ao consolidado.\n"
 					">>> Deseja apagar a pasta 'desagregado' com os arquivos brutos (.txt)? [s/N]: "
 				).strip().lower()
 			except EOFError:
@@ -791,7 +804,7 @@ def main():
 				print("[Mantido] Os arquivos brutos (.txt) foram preservados em 'WoS_artigos/desagregado/concluidos'.")
 		else:
 			print(
-				"[Aviso] A coleta dos anos novos está incompleta. O consolidado anterior foi preservado. "
+				"[Aviso] A coleta está incompleta. O consolidado anterior foi preservado. "
 				"Os downloads concluídos continuam em "
 				"'WoS_artigos/desagregado/concluidos' para que a próxima execução retome de onde parou."
 			)
