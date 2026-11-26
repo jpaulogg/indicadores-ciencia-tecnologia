@@ -1,18 +1,19 @@
 # Indicadores de Ciência, Tecnologia e Inovação (C&T)
 
-Este repositório contém o conjunto de rotinas em R e Python para automação do download, tratamento, padronização e exportação dos indicadores internacionais de Ciência, Tecnologia e Inovação (C&T).
+Este repositório contém o conjunto de rotinas em R e Python para automação do download, tratamento, padronização e exportação dos indicadores internacionais de Ciência, Tecnologia e Inovação (C&T). Para iformações mais detalhadas sobre as rotinas, ver o arquivo [LEIA-ME.md](rotinas/LEIA-ME.md), na pasta `rotinas`.
 
 ---
 
 ## 1. Requisitos e Instruções de Instalação
 
 ### Pré-requisitos
+
 * **R (versão 4.0 ou superior)**:
   * Pacotes R recomendados/necessários: "jsonlite", "curl".
   * Instalação via R:
     
 ```R
-install.packages(c("jsonlite", "curl"))
+> install.packages(c("jsonlite", "curl"))
 ```
 
 * **Python (versão 3.8 ou superior)**:
@@ -20,7 +21,7 @@ install.packages(c("jsonlite", "curl"))
   * O script cria/gerencia seu próprio ambiente virtual (".venv_wos") e instala automaticamente o pacote "websocket-client". Se optar por instalar manualmente:
     
 ```bash
-pip install websocket-client
+$ pip install websocket-client
 ```
 
 * **Navegador Baseado em Chromium**:
@@ -41,6 +42,7 @@ A rotina de coleta de artigos científicos ("artigos_WoS.py") utiliza controle d
 Os indicadores estão divididos em 4 grandes grupos temáticos, padronizados no formato de 7 colunas ("ano", "pais", "cod_pais", "cod_indicador", "tipo_categoria", "nome_especificacao", "valor"):
 
 ### 1. Capacitação e Ocupação em Atividades de C&T e P&D
+
 * **Indicadores**:
   * Concluintes/Titulados no ensino superior (geral e STEM — Bacharelado, Mestrado e Doutorado).
   * Matriculados no ensino superior (geral e STEM).
@@ -54,6 +56,7 @@ Os indicadores estão divididos em 4 grandes grupos temáticos, padronizados no 
   * "percentual": Proporção do emprego STEM em relação ao emprego total.
 
 ### 2. Produção Científica e Patentes de Inovação
+
 * **Indicadores**:
   * Artigos científicos publicados e indexados na Web of Science.
   * Patentes depositadas no escritório americano (USPTO).
@@ -64,6 +67,7 @@ Os indicadores estão divididos em 4 grandes grupos temáticos, padronizados no 
   * "campo": 35 Campos tecnológicos da WIPO (ex.: *Biotechnology*, *Pharmaceuticals*, *Computer technology*, *Telecommunications*, etc.).
 
 ### 3. Dispêndio e Financiamento de Gastos em C&T
+
 * **Indicadores**:
   * Dispêndio Bruto em Pesquisa e Desenvolvimento (GERD) em valores absolutos (milhares de PPP$ a preços constantes de 2017).
   * Dispêndio Bruto em P&D como proporção percentual do Produto Interno Bruto (% do PIB).
@@ -72,6 +76,7 @@ Os indicadores estão divididos em 4 grandes grupos temáticos, padronizados no 
   * "financiador": Fonte de financiamento do gasto ("Business Enterprise", "Government", "Higher Education", "Private Non-Profit", "Rest of the World").
 
 ### 4. Importação e Exportação de Produtos de Média-Alta e Alta Intensidade Tecnológica
+
 * **Indicadores**:
   * Exportações e Importações de manufaturas de média-alta e alta intensidade tecnológica (MHT).
 * **Categorias de Desagregação**:
@@ -82,42 +87,46 @@ Os indicadores estão divididos em 4 grandes grupos temáticos, padronizados no 
 
 ## 4. Instruções e Exemplos de Execução do Código
 
-Os scripts podem ser executados separadamente por módulo ou em lote através do pipeline principal.
+Os scripts podem ser executados separadamente por módulo ou em lote através do pipeline principal. Para iformações mais detalhadas sobre as rotinas, ver o arquivo [LEIA-ME.md](rotinas/LEIA-ME.md).
 
 ### A. Execução Individual de Scripts
+
 Cada script dentro da pasta "rotinas/" pode ser rodado de forma autônoma, desde que o script de configuração inicial ("setup.R") seja carregado previamente no ambiente R:
 
 ```R
-# 1. Carregar o ambiente de configuração inicial
-source("rotinas/setup.R", chdir = TRUE)
-
-# 2. Executar um script específico de preparação (ex.: Dispêndio em P&D)
-source("rotinas/preparacao/dispendio_ct.R")
+> # 1. Carregar o ambiente de configuração inicial
+> source("rotinas/setup.R", chdir = TRUE)
+> 
+> # 2. Executar um script específico de preparação (ex.: Dispêndio em P&D)
+> source("rotinas/preparacao/dispendio_ct.R")
 ```
 
 ### B. Download em Lote das Fontes de Dados
+
 Para baixar automaticamente todas as bases de dados brutas de fontes internacionais (OCDE, UNESCO, OIT, UNIDO e Banco Mundial) de uma só vez:
 
 ```R
-# Executar a rotina integrada de geração de fontes
-source("rotinas/gerar_fontes.R")
+> # Executar a rotina integrada de geração de fontes
+> source("rotinas/gerar_fontes.R")
 ```
 
 Observação: O script "gerar_fontes.R" baixa todas as bases necessárias, com exceção da Web of Science.
 
 ### C. Coleta Incremental da Web of Science (Python)
+
 Para realizar a coleta e atualização da base da Web of Science via automação de navegador:
 
 ```bash
-python rotinas/fontes/WoS_artigos/artigos_WoS.py
+$ python rotinas/fontes/WoS_artigos/artigos_WoS.py
 ```
 
 ### D. Processamento e Exportação Final dos Indicadores
+
 Para executar todo o fluxo de preparação, padronização em 7 colunas e exportação final dos arquivos CSV para o diretório de indicadores:
 
 ```R
-# Executar o script mestre de consolidação
-source("gerar_indicadores.R")
+> # Executar o script mestre de consolidação
+> source("gerar_indicadores.R")
 ```
 
 Ao final da execução do "gerar_indicadores.R", todos os arquivos estarão organizados em subpastas correspondentes ao código de cada indicador (ex.: "indicadores/CT_DISPPD/CT_DISPPD_total.csv").
