@@ -480,7 +480,8 @@ def executar_passo_wos(cdp, url_avancada, query_wos, pasta_em_andamento):
 # 4. LEITURA DO CONSOLIDADO E ATUALIZAÇÃO INCREMENTAL
 # ======================================================================
 COLUNAS_CSV = [
-	"ano", "iso_pais", "pais_nome", "id_macro_topico", "macro_topico", "artigos"
+	"ano", "cod_pais", "pais", "id_macro_topico",
+	"nome_especificacao", "valor"
 ]
 
 
@@ -506,14 +507,14 @@ def ler_consolidado(arquivo_csv_saida):
 			try:
 				ano = int(linha["ano"])
 				cod_topico = int(linha["id_macro_topico"])
-				iso = linha["iso_pais"]
-				contagem = int(linha["artigos"])
+				iso = linha["ISO2"]
+				contagem = int(linha["valor"])
 			except (ValueError, TypeError, KeyError) as erro:
 				raise ValueError(f"Consolidado inválido na linha {num_linha}: {erro}") from erro
 
 			if cod_topico not in MACRO_TOPICOS_10 or iso not in PAISES_52 or contagem < 0:
 				raise ValueError(f"Consolidado com código ou contagem inválida na linha {num_linha}.")
-			if linha["pais_nome"] != PAISES_52[iso][0] or linha["macro_topico"] != MACRO_TOPICOS_10[cod_topico]:
+			if linha["pais"] != PAISES_52[iso][0] or linha["nome_especificacao"] != MACRO_TOPICOS_10[cod_topico]:
 				raise ValueError(f"Consolidado com nome divergente na linha {num_linha}.")
 
 			chave = (ano, cod_topico, iso)

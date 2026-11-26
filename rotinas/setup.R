@@ -47,12 +47,36 @@ mapa_paises <- data.frame(
 		'AR', 'BR', 'CL', 'CO', 'CR', 'IN', 'MX', 'PE', 'RO',
 		'RU', 'TR', 'ZA'
 	),
-	Grupo = c(
-		rep('Ib', 4),
-		rep('I', 17),
-		'O',
-		rep('IIb', 15),
-		rep('II', 12)
+	ISO_NUM = c(
+		'840', '376', '392', '410',
+		'036', '040', '056', '124', '756', '276', '208', '246',
+		'826', '372', '352', '442', '528', '578', '554', '702', '752',
+		'156',
+		'100', '203', '724', '233', '250', '300', '191', '348',
+		'380', '440', '428', '616', '620', '703', '705',
+		'032', '076', '152', '170', '188', '356', '484', '604', '642',
+		'643', '792', '710'
+	),
+	Nome_Completo = c(
+		'Estados Unidos', 'Israel', 'Japão', 'Coreia do Sul', 'Austrália',
+		'Áustria', 'Bélgica', 'Canadá', 'Suíça', 'Alemanha', 'Dinamarca',
+		'Finlândia', 'Reino Unido', 'Irlanda', 'Islândia', 'Luxemburgo',
+		'Países Baixos', 'Noruega', 'Nova Zelândia', 'Cingapura', 'Suécia',
+		'China', 'Bulgária', 'Tchéquia', 'Espanha', 'Estônia', 'França',
+		'Grécia', 'Croácia', 'Hungria', 'Itália', 'Lituânia', 'Letônia',
+		'Polônia', 'Portugal', 'Eslováquia', 'Eslovênia', 'Argentina',
+		'Brasil', 'Chile', 'Colômbia', 'Costa Rica', 'Índia', 'México',
+		'Peru', 'Romênia', 'Rússia', 'Turquia', 'África do Sul'
+	),
+	Grupo = factor(
+		c(
+			rep('Ib', 4),
+			rep('I', 17),
+			'O',
+			rep('IIb', 15),
+			rep('II', 12)
+		),
+		levels = c("Ib", "I", "O", "IIb", "II")
 	)
 )
 

@@ -1,132 +1,106 @@
 # Rotina para automatizar a construção de indicadores internacionais
-# de número de pesquisadores, por setor de atuação e sexo.
+# de dispêndio em C&T e P&D (valores absolutos em PPP$ e % do PIB).
 #
 # autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 #
-# Obs.: os objetos `input_dir` e `dl_dir` está definido em "setup.R".
+# Obs.: os objetos `input_dir` e `dl_dir` estão definidos em "setup.R".
 # -------------------------------------------------------------------
+# DICIONÁRIOS
 
+setores_exec <- c(
+	"EXPPPP.CONST.SP.BUSENTSP" = "Business Enterprise",
+	"EXPPPP.CONST.SP.GOVSP"    = "Government",
+	"EXPPPP.CONST.SP.HIEDUSP"  = "Higher Education",
+	"EXPPPP.CONST.SP.PRNPSP"   = "Private Non-Profit",
+	"EXPPPP.CONST.SP.SPNS"     = "Not Specified Sectors"
+)
+
+setores_exec_pib <- c(
+	"EXPGDP.SP.BUSENTSP" = "Business Enterprise",
+	"EXPGDP.SP.GOVSP"    = "Government",
+	"EXPGDP.SP.HIEDUSP"  = "Higher Education",
+	"EXPGDP.SP.PRNPSP"   = "Private Non-Profit",
+	"EXPGDP.SP.SPNS"     = "Not Specified Sectors"
+)
+
+setores_financ <- c(
+	"EXPPPP.CONST.SF.BUSENTFS" = "Business Enterprise",
+	"EXPPPP.CONST.SF.GOVFS"    = "Government",
+	"EXPPPP.CONST.SF.HIEDUFS"  = "Higher Education",
+	"EXPPPP.CONST.SF.PRNPFS"   = "Private Non-Profit",
+	"EXPPPP.CONST.SF.FUNABFS"  = "Rest of the World",
+	"EXPPPP.CONST.SF.FSNS"     = "Not Specified Source"
+)
+
+# -------------------------------------------
 # LEITURA DOS DADOS
 
-# 1. UNESCO - Science, Technology and Innovation (R&D personnel)
+# UNESCO - Science, Technology and Innovation (OPRI)
+arq_disp <- file.path(input_dir, "UNESCO_disp", "data.csv")
+dl_disp <- file.path(dl_dir, "disp_UNESCO.R")
 
-arq_unesco <- file.path(input_dir, "UNESCO_SCN_OPRI_ocup", "data.csv")
-dl_unesco <- file.path(dl_dir, "ocup_UNESCO.R")
-
-if (!file.exists(arq_unesco)) {
+if (!file.exists(arq_disp)) {
 	resposta <- readline(paste0(
-		"O arquivo de dados não foi encontrado.",
+		"O arquivo de dados de dispêndio (UNESCO) não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
-		source(dl_unesco, chdir = TRUE)
+		source(dl_disp, chdir = TRUE)
 	} else {
 		stop("Download cancelado")
 	}
 }
 
-dados_unesco <- read.csv(arq_unesco)
-
-# 2. OIT - Employment in STEM occupations by sex and status
-
-arq_oit <- c(
-	total = file.path(input_dir, "OIT_EMP_TEMP_AGE_STE_NB_A.csv"),
-	stem  = file.path(input_dir, "OIT_EMP_STEM_SEX_STE_NB_A.csv")
+colunas_unesco <- c(
+	"geoUnit"     = "character",
+	"year"        = "integer",
+	"indicatorId" = "character",
+	"value"       = "numeric",
+	"qualifier"   = "NULL",
+	"magnitude"   = "NULL"
 )
 
-dl_oit <- file.path(dl_dir, "ocup_OIT")
-
-if (!all(file.exists(arq_oit))) {
-	resposta <- readline(paste0(
-		"Pelo menos um arquivo de dados não foi encontrado.",
-		" Deseja baixá-lo(s) agora? (s/n): "
-	))
-	if (grepl(pattern = "^[SsYy]", resposta)) {
-		source(dl_oit, chdir = TRUE)
-	} else {
-		stop("Download cancelado")
-	}
-}
-
-dados_oit_t <- read.csv(arq_oit["total"])
-dados_oit_stem <- read.csv(arq_oit["stem"])
+dados_disp <- read.csv(arq_disp, colClasses = colunas_unesco)
 
 # -------------------------------------------
 # INDICADORES
 
-# 1. Número de pesquisadores (HC)
-ct_pesq <- list()
+# 1. Dispêndio em p&d em valores absolutos
+# unidade: '000 PPP$ a preços constantes de 2017
+ct_disppd <- list()
 
-# 1.1 Total
-ct_pesq$total <- dados_unesco[
-	dados_unesco$indicatorId == 21001,
+ct_disppd$total <- dados_disp[
+	dados_disp$indicatorId == "EXPPPP.CONST",
 ]
 
-# 1.2 Por setor de atuação
-id_setor <- c(21205, 21209, 21213, 21217)
-ct_pesq$setor <- dados_unesco[
-	dados_unesco$indicatorId %in% id_setor,
+ct_disppd$executor <- dados_disp[
+	dados_disp$indicatorId %in% names(setores_exec),
 ]
-
-# 1.3 Por sexo
-# UNESCO disponibiliza o total (21001) e o feminino (21105).
-# O masculino é calculado pela diferença entre os dois.
-ct_pesq$sexo <- dados_unesco[
-	dados_unesco$indicatorId == 21105,
-]
-ct_pesq$sexo$sexo <- "F"
-
-pesq_masc <- merge(
-	ct_pesq$total[, c("geoUnit", "year", "value")],
-	ct_pesq$sexo[, c("geoUnit", "year", "value")],
-	by = c("geoUnit", "year"),
-	suffixes = c(".total", ".fem")
+ct_disppd$executor$setor_nome <- factor(
+	unname(setores_exec[ct_disppd$executor$indicatorId]),
+	levels = unname(setores_exec)
 )
 
-pesq_masc$value <- pesq_masc$value.total - pesq_masc$value.fem
-pesq_masc$indicatorId <- NA_integer_
-pesq_masc$qualifier <- "CALCULADO"
-pesq_masc$magnitude <- ""
-pesq_masc$sexo <- "M"
-
-pesq_masc <- pesq_masc[, names(ct_pesq$sexo)]
-ct_pesq$sexo <- rbind(ct_pesq$sexo, pesq_masc)
-
-# 2. Emprego em ocupações STEM (CT_TRABSTEM)
-ct_trabstem <- list()
-
-# 2.1 Total (todas as posições na ocupação)
-ct_trabstem$total <- dados_oit_stem[
-	dados_oit_stem$sex == "SEX_T" &
-	dados_oit_stem$classif1 == "STE_AGGREGATE_TOTAL",
+ct_disppd$financiador <- dados_disp[
+	dados_disp$indicatorId %in% names(setores_financ),
 ]
-
-# 2.2 Por sexo
-ct_trabstem$sexo <- dados_oit_stem[
-	dados_oit_stem$sex %in% c("SEX_M", "SEX_F") &
-	dados_oit_stem$classif1 == "STE_AGGREGATE_TOTAL",
-]
-
-# 2.3 Percentual em relação ao total de pessoas ocupadas (15 anos ou mais)
-# Os dois arquivos apresentam os valores em milhares.
-# O campo `source` é mantido no pareamento para não combinar pesquisas distintas.
-emprego_total <- dados_oit_t[
-	dados_oit_t$classif1 == "AGE_YTHADULT_YGE15" &
-	dados_oit_t$classif2 == "STE_AGGREGATE_TOTAL",
-]
-
-ct_trabstem$percentual <- merge(
-	ct_trabstem$total,
-	emprego_total[, c("ref_area", "source", "time", "obs_value")],
-	by = c("ref_area", "source", "time"),
-	suffixes = c(".stem", ".total")
+ct_disppd$financiador$setor_nome <- factor(
+	unname(setores_financ[ct_disppd$financiador$indicatorId]),
+	levels = unname(setores_financ)
 )
 
-ct_trabstem$percentual$percentual <- with(
-	ct_trabstem$percentual,
-	100 * obs_value.stem / obs_value.total
+# 2. Dispêndio em P&D como percentual do PIB
+ct_disppdpib <- list()
+
+ct_disppdpib$total <- dados_disp[
+	dados_disp$indicatorId == "EXPGDP.TOT",
+]
+
+ct_disppdpib$executor <- dados_disp[
+	dados_disp$indicatorId %in% names(setores_exec_pib),
+]
+ct_disppdpib$executor$setor_nome <- factor(
+	unname(setores_exec_pib[ct_disppdpib$executor$indicatorId]),
+	levels = unname(setores_exec_pib)
 )
-ct_trabstem$percentual$percentual[
-	ct_trabstem$percentual$obs_value.total == 0
-] <- NA_real_

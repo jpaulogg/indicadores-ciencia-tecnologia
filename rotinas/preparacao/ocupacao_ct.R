@@ -1,22 +1,37 @@
 # Rotina para automatizar a construção de indicadores internacionais
-# de número de pesquisadores, por setor de atuação e sexo.
+# de número de pesquisadores (por setor de atuação e sexo) e
+# emprego em ocupações STEM (total, por sexo e % do emprego total).
 #
 # autor: João Paulo Garcia
 # email: joao.garcia@fjp.mg.gov.br
 #
-# Obs.: os objetos `input_dir` e `dl_dir` está definido em "setup.R".
+# Obs.: os objetos `input_dir` e `dl_dir` estão definidos em "setup.R".
 # -------------------------------------------------------------------
+# DICIONÁRIOS
 
+setores_pesq <- c(
+	"21205" = "Empresas",
+	"21209" = "Governo",
+	"21213" = "Ensino Superior",
+	"21217" = "Inst. Privadas Sem Fins Lucrativos"
+)
+
+rotulos_sexo <- c(
+	"SEX_F" = "F",
+	"SEX_M" = "M"
+)
+
+# -------------------------------------------------------------------
 # LEITURA DOS DADOS
 
 # 1. UNESCO - Science, Technology and Innovation (R&D personnel)
 
-arq_unesco <- file.path(input_dir, "UNESCO_SCN_OPRI_ocup", "data.csv")
+arq_unesco <- file.path(input_dir, "UNESCO_ocup", "data.csv")
 dl_unesco <- file.path(dl_dir, "ocup_UNESCO.R")
 
 if (!file.exists(arq_unesco)) {
 	resposta <- readline(paste0(
-		"O arquivo de dados não foi encontrado.",
+		"O arquivo de dados de R&D personnel (UNESCO) não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
@@ -26,7 +41,16 @@ if (!file.exists(arq_unesco)) {
 	}
 }
 
-dados_unesco <- read.csv(arq_unesco)
+colunas_unesco <- c(
+	"geoUnit"     = "character",
+	"year"        = "integer",
+	"indicatorId" = "character",
+	"value"       = "numeric",
+	"qualifier"   = "NULL",
+	"magnitude"   = "NULL"
+)
+
+dados_unesco <- read.csv(arq_unesco, colClasses = colunas_unesco)
 
 # 2. OIT - Employment in STEM occupations by sex and status
 
@@ -35,11 +59,11 @@ arq_oit <- c(
 	stem  = file.path(input_dir, "OIT_EMP_STEM_SEX_STE_NB_A.csv")
 )
 
-dl_oit <- file.path(dl_dir, "ocup_OIT")
+dl_oit <- file.path(dl_dir, "ocup_OIT.R")
 
 if (!all(file.exists(arq_oit))) {
 	resposta <- readline(paste0(
-		"Pelo menos um arquivo de dados não foi encontrado.",
+		"Pelo menos um arquivo de dados da OIT não foi encontrado.",
 		" Deseja baixá-lo(s) agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
@@ -50,7 +74,13 @@ if (!all(file.exists(arq_oit))) {
 }
 
 dados_oit_t <- read.csv(arq_oit["total"])
+dados_oit_t <- dados_oit_t[,
+	c("ref_area", "source", "classif1", "classif2", "time", "obs_value")
+]
 dados_oit_stem <- read.csv(arq_oit["stem"])
+dados_oit_stem <- dados_oit_stem [
+	c("ref_area", "source", "sex", "classif1", "time", "obs_value")
+]
 
 # -------------------------------------------
 # INDICADORES
@@ -58,24 +88,22 @@ dados_oit_stem <- read.csv(arq_oit["stem"])
 # 1. Número de pesquisadores (HC)
 ct_pesq <- list()
 
-# 1.1 Total
 ct_pesq$total <- dados_unesco[
-	dados_unesco$indicatorId == 21001,
+	dados_unesco$indicatorId == "21001",
 ]
 
-# 1.2 Por setor de atuação
-id_setor <- c(21205, 21209, 21213, 21217)
 ct_pesq$setor <- dados_unesco[
-	dados_unesco$indicatorId %in% id_setor,
+	dados_unesco$indicatorId %in% names(setores_pesq),
 ]
+ct_pesq$setor$setor_nome <- factor(
+	unname(setores_pesq[ct_pesq$setor$indicatorId]),
+	levels = unname(setores_pesq)
+)
 
-# 1.3 Por sexo
-# UNESCO disponibiliza o total (21001) e o feminino (21105).
-# O masculino é calculado pela diferença entre os dois.
 ct_pesq$sexo <- dados_unesco[
-	dados_unesco$indicatorId == 21105,
+	dados_unesco$indicatorId == "21105",
 ]
-ct_pesq$sexo$sexo <- "F"
+ct_pesq$sexo$sexo_nome <- "F"
 
 pesq_masc <- merge(
 	ct_pesq$total[, c("geoUnit", "year", "value")],
@@ -85,32 +113,37 @@ pesq_masc <- merge(
 )
 
 pesq_masc$value <- pesq_masc$value.total - pesq_masc$value.fem
-pesq_masc$indicatorId <- NA_integer_
-pesq_masc$qualifier <- "CALCULADO"
-pesq_masc$magnitude <- ""
+pesq_masc$indicatorId <- NA_character_
 pesq_masc$sexo <- "M"
 
 pesq_masc <- pesq_masc[, names(ct_pesq$sexo)]
 ct_pesq$sexo <- rbind(ct_pesq$sexo, pesq_masc)
 
-# 2. Emprego em ocupações STEM (CT_TRABSTEM)
+ct_pesq$sexo$sexo_nome <- factor(
+	ct_pesq$sexo$sexo_nome,
+	levels = c("F", "M")
+)
+
+# 2. emprego em ocupações stem
 ct_trabstem <- list()
 
-# 2.1 Total (todas as posições na ocupação)
 ct_trabstem$total <- dados_oit_stem[
 	dados_oit_stem$sex == "SEX_T" &
 	dados_oit_stem$classif1 == "STE_AGGREGATE_TOTAL",
 ]
 
-# 2.2 Por sexo
 ct_trabstem$sexo <- dados_oit_stem[
 	dados_oit_stem$sex %in% c("SEX_M", "SEX_F") &
 	dados_oit_stem$classif1 == "STE_AGGREGATE_TOTAL",
 ]
 
-# 2.3 Percentual em relação ao total de pessoas ocupadas (15 anos ou mais)
-# Os dois arquivos apresentam os valores em milhares.
-# O campo `source` é mantido no pareamento para não combinar pesquisas distintas.
+ct_trabstem$sexo$sex <- factor(
+	unname(rotulos_sexo[ct_trabstem$sexo$sex]),
+	levels = c("F", "M")
+)
+
+# valores em milhares.
+# O campo `source` é mantido para não combinar pesquisas distintas.
 emprego_total <- dados_oit_t[
 	dados_oit_t$classif1 == "AGE_YTHADULT_YGE15" &
 	dados_oit_t$classif2 == "STE_AGGREGATE_TOTAL",

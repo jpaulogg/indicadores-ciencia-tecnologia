@@ -21,7 +21,7 @@ url_api <- paste0(
 	"DSD_PATENTS@DF_PATENTS,",
 	# versão da base de dados
 	"1.0/",
-	# autoridade de patentes (WIPO/PCT + USPTO)
+	# autoridade de patentes (WIPO/PCT + USPTO + Triadic family)
 	"9P50_1+US50+9P50_2.",
 	# frequência (anual)
 	"A.",
@@ -42,9 +42,9 @@ url_api <- paste0(
 	"+WIPO_09+WIPO_10+WIPO_11+WIPO_12+WIPO_13+WIPO_14+WIPO_15+WIPO_16",
 	"+WIPO_17+WIPO_18+WIPO_19+WIPO_20+WIPO_21+WIPO_22+WIPO_23+WIPO_24",
 	"+WIPO_25+WIPO_26+WIPO_27+WIPO_28+WIPO_29+WIPO_30+WIPO_31+WIPO_32",
-	"+WIPO_33+WIPO_34+WIPO_35+_Z.",
+	"+WIPO_33+WIPO_34+WIPO_35.",
 	# campo tecnológico OCDE (não incluir)
-	"?",
+	"_Z?",
 	# período (2000 ao mais recente)
 	"startPeriod=2000",
 	# representação tabular direta em linhas e colunas

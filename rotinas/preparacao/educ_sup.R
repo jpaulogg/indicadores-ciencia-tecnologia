@@ -11,18 +11,51 @@
 # ... periodo (por padrão, 2000:2025)
 # ... mapa_paises (siglas ISO3 e ISO2 de grupos de países selecionados)
 # -------------------------------------------
+# DICIONÁRIOS
 
+campos_educ_ocde <- c(
+	"F00"    = "Generic programmes and qualifications",
+	"F01"    = "Education",
+	"F02"    = "Arts and humanities",
+	"F03"    = "Social sciences, journalism and information",
+	"F04"    = "Business, administration and law",
+	"F05"    = "Natural sciences, mathematics and statistics",
+	"F06"    = "Information and Communication Technologies (ICTs)",
+	"F07"    = "Engineering, manufacturing and construction",
+	"F08"    = "Agriculture, forestry, fisheries and veterinary",
+	"F09"    = "Health and welfare",
+	"F10"    = "Services",
+	"F99"    = "Field unspecified",
+	"F05T07" = "Science, technology, engineering and mathematics (STEM)"
+)
+
+inst_unesco <- c(
+	"ETOIP.5T8.PR" = "Privada",
+	"ETOIP.5T8.PU" = "Pública"
+)
+
+inst_ocde <- c(
+	"INST_EDU_PUB"  = "Pública",
+	"INST_EDU_PRIV" = "Privada"
+)
+
+sexo_unesco <- c(
+	"25057" = "Feminino",
+	"42620" = "Masculino"
+)
+
+# -------------------------------------------
 # LEITURA DOS DADOS
 
 # 1. OCDE - Number of enrolled students, graduates
 # .......... and new entrants by field of education
 
-arq_unesco <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
+arq_ocde <- file.path(input_dir, "OCDE_estudantes_por_campo.csv")
 dl_ocde <- file.path(dl_dir, "educ_OCDE.R")
 
-if (!file.exists(arq_unesco)) {
+if (!file.exists(arq_ocde)) {
 	resposta <- readline(paste0(
-		"O arquivo 'OCDE_estudantes_por_campo.csv' não foi encontrado.",
+		"O arquivo da base de educação da OCDE não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
@@ -35,29 +68,35 @@ if (!file.exists(arq_unesco)) {
 colunas_ocde <- c(
 	"TIME_PERIOD"     = "integer",
 	"REF_AREA"        = "character",
-	"MEASURE"         = "factor",
-	"INST_TYPE_EDU"   = "factor",
-	"EDUCATION_LEV"   = "factor",
-	"EDUCATION_FIELD" = "factor",
+	"MEASURE"         = "character",
+	"INST_TYPE_EDU"   = "character",
+	"EDUCATION_LEV"   = "character",
+	"EDUCATION_FIELD" = "character",
 	"SEX"             = "factor",
-	"OBS_STATUS"      = "factor",
+	"OBS_STATUS"      = "character",
 	"OBS_VALUE"       = "numeric"
 )
 
-dados_ocde <- read.csv(arq_unesco, colClasses = colunas_ocde)
+dados_ocde <- read.csv(arq_ocde, colClasses = colunas_ocde)
 dados_ocde <- dados_ocde[, names(colunas_ocde)]
 
 # OBS_STATUS == "M" significa valores que não podem existir
 dados_ocde$OBS_VALUE[dados_ocde$OBS_STATUS == "M"] <- 0
 
+# Criar campo_nome como fator ordenado para a saída gráfica
+dados_ocde$campo_nome <- factor(
+	unname(campos_educ_ocde[dados_ocde$EDUCATION_FIELD]),
+	levels = unname(campos_educ_ocde)
+)
+
 # 2. UNESCO - Other Policy Relevant Indicators (Education – OPRI)
 
-arq_unesco <- file.path(input_dir, "UNESCO_EDUC_OPRI.csv")
+arq_unesco <- file.path(input_dir, "UNESCO_educ", "data.csv")
 dl_unesco <- file.path(dl_dir, "educ_UNESCO.R")
 
 if (!file.exists(arq_unesco)) {
 	resposta <- readline(paste0(
-		"O arquivo de dados não foi encontrado.",
+		"O arquivo de dados de educação da UNESCO não foi encontrado.",
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
@@ -67,13 +106,22 @@ if (!file.exists(arq_unesco)) {
 	}
 }
 
-dados_unesco <- read.csv(arq_unesco)
+colunas_unesco <- c(
+	"geoUnit"     = "character",
+	"year"        = "integer",
+	"indicatorId" = "character",
+	"value"       = "numeric",
+	"qualifier"   = "NULL",
+	"magnitude"   = "NULL"
+)
+
+dados_unesco <- read.csv(arq_unesco, colClasses = colunas_unesco)
 
 # -------------------------------------------
 # FUNÇÕES
 
 # 1. Função para agregar a base da OCDE. Ao usá-la, é necessário excluir
-# .. linhas que possuem "Totais" agregados e que não serão agrupadas.
+# .. linhas que possuem "Totais" já agregados e que não serão agrupadas.
 agregar <- function(dados, .ref_var = NULL, .estrito = TRUE) {
 	agrupadores <- c("REF_AREA", "TIME_PERIOD", .ref_var)
 	form <- reformulate(termlabels = agrupadores, response = "OBS_VALUE")
@@ -103,16 +151,15 @@ agregar.bloco <- function(dados, .medida = "GRAD", .nivel = NULL, .stem = FALSE)
 	}
 
 	# áreas STEM (não é possível desagregar por tipo de instituição)
-	# ver table(dados_ocde$EDUCATION_FIELD, dados_ocde$INST_TYPE_EDU)
 	if (.stem) {
 		df_stem <- df[
 			df$EDUCATION_FIELD %in% c("F05", "F06", "F07") &
 			df$INST_TYPE_EDU == "INST_EDU",
 		]
-		df_stem$EDUCATION_FIELD <- droplevels(df_stem$EDUCATION_FIELD)
+		df_stem$campo_nome <- droplevels(df_stem$campo_nome)
 
 		return(list(
-			campo = agregar(df_stem, "EDUCATION_FIELD"),
+			campo = agregar(df_stem, "campo_nome"),
 			sexo  = agregar(df_stem, "SEX"),
 			total = agregar(df_stem)
 		))
@@ -123,19 +170,25 @@ agregar.bloco <- function(dados, .medida = "GRAD", .nivel = NULL, .stem = FALSE)
 		df$EDUCATION_FIELD != "_T" &
 		df$INST_TYPE_EDU == "INST_EDU",
 	]
-	df_tot$EDUCATION_FIELD <- droplevels(df_tot$EDUCATION_FIELD)
+	df_tot$campo_nome <- droplevels(df_tot$campo_nome)
 
 	df_inst <- df[
 		df$EDUCATION_FIELD == "_T" &
 		df$INST_TYPE_EDU != "INST_EDU",
 	]
-	df_inst$INST_TYPE_EDU <- droplevels(df_inst$INST_TYPE_EDU)
+
+	res_inst <- agregar(df_inst, "INST_TYPE_EDU")
+	res_inst$inst_nome <- factor(
+		unname(inst_ocde[res_inst$INST_TYPE_EDU]),
+		levels = c("Pública", "Privada")
+	)
+	res_inst$INST_TYPE_EDU <- NULL
 
 	list(
-		campo = agregar(df_tot, "EDUCATION_FIELD"),
+		campo = agregar(df_tot, "campo_nome"),
+		inst  = res_inst,
 		sexo  = agregar(df_tot, "SEX"),
-		total = agregar(df_tot),
-		inst  = agregar(df_inst, "INST_TYPE_EDU")
+		total = agregar(df_tot)
 	)
 }
 
@@ -174,16 +227,24 @@ ct_doutorestem <- agregar.bloco(
 # 2. Matriculados
 
 # 2.1 Matriculados em todas as áreas (CT_MATOT)
-ct_matot <- vector(mode = "list", length = 4)
+ct_matot <- list()
 
 # dados da UNESCO abrangem período mais longo e maior número de países
-ct_matot$total <- dados_unesco[dados_unesco$indicatorId == "25053",]
+ct_matot$total <- dados_unesco[dados_unesco$indicatorId == "25053", ]
 
-id_mat_sexo <- c("25057", "42620")
-ct_matot$sexo <- dados_unesco[dados_unesco$indicatorId %in% id_mat_sexo,]
+ct_matot$sexo <- dados_unesco[dados_unesco$indicatorId %in% names(sexo_unesco), ]
+ct_matot$sexo$sexo_nome <- factor(
+	unname(sexo_unesco[ct_matot$sexo$indicatorId]),
+	levels = c("Feminino", "Masculino")
+)
+ct_matot$sexo$indicatorId <- NULL
 
-id_mat_inst <- c("ETOIP.5T8.PR", "ETOIP.5T8.PU")
-ct_matot$inst <- dados_unesco[dados_unesco$indicatorId %in% id_mat_inst,]
+ct_matot$inst <- dados_unesco[dados_unesco$indicatorId %in% names(inst_unesco), ]
+ct_matot$inst$inst_nome <- factor(
+	unname(inst_unesco[ct_matot$inst$indicatorId]),
+	levels = c("Pública", "Privada")
+)
+ct_matot$inst$indicatorId <- NULL
 
 # dados da OCDE permitem desagregar por campo de estudo
 ct_matot$campo <- agregar(
@@ -192,10 +253,10 @@ ct_matot$campo <- agregar(
 		dados_ocde$EDUCATION_FIELD != "_T" &
 		dados_ocde$INST_TYPE_EDU == "INST_EDU",
 	],
-	.ref_var = "EDUCATION_FIELD"
+	.ref_var = "campo_nome"
 )
-ct_matot$campo$EDUCATION_FIELD <- droplevels(
-	ct_matot$campo$EDUCATION_FIELD
+ct_matot$campo$campo_nome <- droplevels(
+	ct_matot$campo$campo_nome
 )
 
 # 2.2 Matriculados em cursos STEM (CT_MATSTEM)
