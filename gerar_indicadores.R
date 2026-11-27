@@ -62,8 +62,8 @@ fmt.indicador <- function(df, .cod_ind, .nome_df) {
 	df$cod_indicador  <- .cod_ind
 	df$tipo_categoria <- .nome_df
 
-	# adicionar especificação se ainda não existir
-	if (!"nome_especificacao" %in% colnames(df)) {
+	# quando não existem categorias de desagregação
+	if (.nome_df %in% c("total", "percentual")) {
 		df$nome_especificacao <- df$tipo_categoria
 	}
 
