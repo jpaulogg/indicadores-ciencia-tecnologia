@@ -59,6 +59,7 @@ if (!file.exists(arq_ocde)) {
 		" Deseja baixá-lo agora? (s/n): "
 	))
 	if (grepl(pattern = "^[SsYy]", resposta)) {
+		options(timeout = 180)  # este download pode demorar
 		source(dl_ocde, chdir = TRUE)
 	} else {
 		stop("Download cancelado")
@@ -150,7 +151,9 @@ agregar.bloco <- function(dados, .medida = "GRAD", .nivel = NULL, .stem = FALSE)
 		df <- df[df$EDUCATION_LEV == .nivel, ]
 	}
 
-	# áreas STEM (não é possível desagregar por tipo de instituição)
+	# áreas STEM (não é possível desagregar por tipo de instituição).
+	# Ver a saída do comando:
+	# ```table(dados_ocde$EDUCATION_FIELD, dados_ocde$INST_TYPE_EDU)```
 	if (.stem) {
 		df_stem <- df[
 			df$EDUCATION_FIELD %in% c("F05", "F06", "F07") &
